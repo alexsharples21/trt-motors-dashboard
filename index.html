@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TRT Motors — Live Jobs Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --blue: #1a1aff;
+  --blue-light: #e6e6ff;
+  --blue-mid: #4444ff;
+  --green: #1D9E75;
+  --green-light: #E1F5EE;
+  --amber: #BA7517;
+  --amber-light: #FAEEDA;
+  --red: #A32D2D;
+  --red-light: #FCEBEB;
+  --gold: #FFD700;
+  --bg: #f4f3f0;
+  --card: #ffffff;
+  --border: rgba(0,0,0,0.08);
+  --border-strong: rgba(0,0,0,0.15);
+  --text: #1a1a1a;
+  --text-muted: #6b6b6b;
+  --text-faint: #9a9a9a;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* HEADER */
+.header { background: var(--blue); padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.header-brand { display: flex; align-items: center; gap: 12px; }
+.header-logo { color: #fff; font-weight: 600; font-size: 17px; letter-spacing: 0.5px; }
+.header-live { display: flex; align-items: center; gap: 5px; color: rgba(255,255,255,0.65); font-size: 12px; }
+.live-dot { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.header-actions { display: flex; gap: 8px; }
+.btn-header { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); color: #fff; padding: 6px 14px; border-radius: 8px; font-size: 13px; font-family: inherit; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.15s; }
+.btn-header:hover { background: rgba(255,255,255,0.25); }
+
+/* LAYOUT */
+.container { max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
+
+/* STATS */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+.stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; }
+.stat-val { font-size: 28px; font-weight: 600; color: var(--text); line-height: 1; }
+.stat-lbl { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+.stat-card.blue { border-top: 3px solid var(--blue); }
+.stat-card.green { border-top: 3px solid var(--green); }
+.stat-card.amber { border-top: 3px solid var(--amber); }
+.stat-card.gray { border-top: 3px solid #888; }
+
+/* TOOLBAR */
+.toolbar { display: flex; gap: 10px; margin-bottom: 16px; align-items: center; flex-wrap: wrap; }
+.search-wrap { flex: 1; min-width: 200px; position: relative; }
+.search-wrap input { width: 100%; padding: 8px 12px 8px 36px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); font-size: 13px; font-family: inherit; background: var(--card); color: var(--text); }
+.search-wrap input:focus { outline: none; border-color: var(--blue); }
+.search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--text-faint); font-size: 15px; pointer-events: none; }
+.filter-select { padding: 8px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); font-size: 13px; font-family: inherit; background: var(--card); color: var(--text); cursor: pointer; }
+.filter-select:focus { outline: none; border-color: var(--blue); }
+
+/* TABS */
+.tabs { display: flex; gap: 4px; margin-bottom: 16px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 4px; width: fit-content; }
+.tab-btn { padding: 6px 16px; border-radius: 6px; border: none; background: transparent; font-size: 13px; font-family: inherit; color: var(--text-muted); cursor: pointer; transition: all 0.15s; }
+.tab-btn.active { background: var(--blue); color: #fff; font-weight: 500; }
+
+/* JOB CARDS */
+.job-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px; transition: border-color 0.15s, transform 0.1s; }
+.job-card:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+.job-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+.reg-plate { background: var(--gold); color: #1a1a1a; font-family: 'DM Mono', monospace; font-weight: 500; font-size: 13px; padding: 4px 12px; border-radius: 6px; letter-spacing: 2px; white-space: nowrap; border: 2px solid rgba(0,0,0,0.1); }
+.job-info { flex: 1; min-width: 0; }
+.job-name { font-size: 14px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.job-vehicle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.job-meta { display: flex; align-items: center; gap: 6px; }
+.days-pill { font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 500; white-space: nowrap; }
+.days-ok   { background: var(--green-light); color: #0F6E56; }
+.days-warn { background: var(--amber-light); color: var(--amber); }
+.days-over { background: var(--red-light); color: var(--red); }
+.tag { font-size: 10px; padding: 2px 7px; border-radius: 20px; font-weight: 600; letter-spacing: 0.3px; }
+.tag-auth    { background: var(--blue-light); color: var(--blue); }
+.tag-inv     { background: var(--green-light); color: #0F6E56; }
+.tag-comp    { background: #f0f0f0; color: #444; }
+
+/* PROGRESS BAR */
+.progress-wrap { margin-bottom: 10px; }
+.progress-track { display: flex; gap: 2px; height: 4px; border-radius: 2px; overflow: visible; }
+.pip { flex: 1; height: 4px; border-radius: 2px; background: #e0dedd; position: relative; }
+.pip.done   { background: var(--green); }
+.pip.active { background: var(--blue); }
+.pip.inv    { background: #639922; }
+.pip.comp   { background: #888; }
+.progress-label { font-size: 11px; color: var(--text-muted); margin-top: 5px; display: flex; justify-content: space-between; }
+
+/* JOB FOOTER */
+.job-footer { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.job-refs { font-size: 12px; color: var(--text-muted); flex: 1; font-family: 'DM Mono', monospace; }
+.job-refs span { color: var(--text-faint); }
+.stage-select { font-size: 12px; padding: 5px 8px; border: 1px solid var(--border-strong); border-radius: 6px; font-family: inherit; background: var(--card); color: var(--text); cursor: pointer; max-width: 200px; }
+.stage-select:focus { outline: none; border-color: var(--blue); }
+.btn-icon { background: none; border: 1px solid var(--border-strong); border-radius: 6px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted); transition: all 0.15s; font-size: 14px; }
+.btn-icon:hover { border-color: var(--red); color: var(--red); background: var(--red-light); }
+
+/* EMPTY */
+.empty-state { text-align: center; padding: 3rem; color: var(--text-faint); }
+.empty-state svg { margin-bottom: 12px; opacity: 0.3; }
+.empty-state p { font-size: 14px; }
+
+/* LOG */
+.log-section { margin-top: 24px; }
+.log-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-faint); margin-bottom: 8px; }
+.log-box { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.log-entry { display: flex; gap: 12px; align-items: baseline; padding: 8px 14px; border-bottom: 1px solid var(--border); font-size: 12px; }
+.log-entry:last-child { border-bottom: none; }
+.log-time { color: var(--text-faint); font-family: 'DM Mono', monospace; white-space: nowrap; font-size: 11px; }
+.log-msg { color: var(--text-muted); }
+.log-msg.auto { color: var(--blue); font-weight: 500; }
+.log-auto-badge { background: var(--blue-light); color: var(--blue); font-size: 10px; padding: 1px 6px; border-radius: 4px; font-weight: 600; white-space: nowrap; }
+
+/* MODAL */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); padding: 24px; width: 100%; max-width: 440px; }
+.modal-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.form-row { margin-bottom: 12px; }
+.form-row label { font-size: 12px; font-weight: 500; color: var(--text-muted); display: block; margin-bottom: 4px; }
+.form-row input, .form-row select { width: 100%; padding: 8px 12px; border: 1px solid var(--border-strong); border-radius: 6px; font-size: 13px; font-family: inherit; background: var(--card); color: var(--text); }
+.form-row input:focus, .form-row select:focus { outline: none; border-color: var(--blue); }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+.btn { padding: 8px 18px; border-radius: 8px; font-size: 13px; font-family: inherit; font-weight: 500; cursor: pointer; transition: all 0.15s; border: 1px solid var(--border-strong); background: var(--card); color: var(--text); }
+.btn:hover { background: #f0f0f0; }
+.btn-primary { background: var(--blue); color: #fff; border-color: var(--blue); }
+.btn-primary:hover { background: var(--blue-mid); border-color: var(--blue-mid); }
+
+/* STAGE BADGE ON CARD */
+.current-stage-badge { display: inline-flex; align-items: center; gap: 4px; background: var(--blue-light); color: var(--blue); font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
+
+@media (max-width: 640px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .form-grid { grid-template-columns: 1fr; }
+  .header-logo { font-size: 15px; }
+  .btn-header span { display: none; }
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-brand">
+    <div class="header-logo">TRT Motors</div>
+    <div class="header-live"><span class="live-dot"></span>Live dashboard</div>
+  </div>
+  <div class="header-actions">
+    <button class="btn-header" onclick="openModal('add-modal')">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      <span>Add job</span>
+    </button>
+    <button class="btn-header" onclick="openModal('sim-modal')">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+      <span>Simulate email</span>
+    </button>
+  </div>
+</header>
+
+<div class="container">
+  <div class="stats-grid" id="stats-grid"></div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="setFilter('active',this)">Active</button>
+    <button class="tab-btn" onclick="setFilter('invoiced',this)">Invoiced / Complete</button>
+    <button class="tab-btn" onclick="setFilter('all',this)">All jobs</button>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-wrap">
+      <svg class="search-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="search-input" placeholder="Search by name, reg or vehicle…" oninput="render()">
+    </div>
+    <select class="filter-select" id="stage-filter" onchange="render()">
+      <option value="">All stages</option>
+    </select>
+  </div>
+
+  <div id="job-list"></div>
+
+  <div class="log-section">
+    <div class="log-title">Auto-trigger log</div>
+    <div class="log-box" id="log-box">
+      <div class="log-entry"><span class="log-time">—</span><span class="log-msg">No triggers yet. Use "Simulate email" to test automatic stage updates.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD JOB MODAL -->
+<div class="modal-overlay" id="add-modal">
+  <div class="modal">
+    <div class="modal-title">
+      <svg width="18" height="18" fill="none" stroke="var(--blue)" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      Add new job
+    </div>
+    <div class="form-grid">
+      <div class="form-row"><label>Customer name</label><input id="f-name" placeholder="Mrs Jane Smith"></div>
+      <div class="form-row"><label>Registration</label><input id="f-reg" placeholder="AB12 CDE" style="text-transform:uppercase"></div>
+    </div>
+    <div class="form-row"><label>Vehicle</label><input id="f-vehicle" placeholder="Ford Focus 1.0 EcoBoost"></div>
+    <div class="form-row"><label>Address</label><input id="f-addr" placeholder="1 High Street, Liverpool, L1 1AA"></div>
+    <div class="form-grid">
+      <div class="form-row"><label>Invoice number</label><input id="f-inv" placeholder="02602"></div>
+      <div class="form-row"><label>ACG reference</label><input id="f-ref" placeholder="1432000"></div>
+    </div>
+    <div class="form-row"><label>Starting stage</label><select id="f-stage"></select></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('add-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addJob()">Add job</button>
+    </div>
+  </div>
+</div>
+
+<!-- SIMULATE EMAIL MODAL -->
+<div class="modal-overlay" id="sim-modal">
+  <div class="modal">
+    <div class="modal-title">
+      <svg width="18" height="18" fill="none" stroke="var(--blue)" stroke-width="2" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+      Simulate incoming email
+    </div>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">Test how the dashboard responds when emails arrive. In the live version this happens automatically.</p>
+    <div class="form-row"><label>Email type</label>
+      <select id="sim-type" onchange="updateSimReg()">
+        <option value="instruction">New instruction email → adds job at "Instructed"</option>
+        <option value="authority">Engineer authority email → moves to "Authorised"</option>
+        <option value="invoiced">Invoice confirmed sent to ACG → moves to "Invoiced"</option>
+        <option value="remittance">Remittance email from ACG → removes job from dashboard</option>
+      </select>
+    </div>
+    <div class="form-row"><label>Vehicle</label><select id="sim-reg"></select></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('sim-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="runSim()">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:inline;vertical-align:-2px;margin-right:4px"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        Trigger
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STAGES = [
+  'Instructed',
+  'Vehicle on site',
+  'Stripped & estimated',
+  'Authorised',
+  'Parts on site',
+  'Body repair',
+  'Prep for paint',
+  'Paint',
+  'Fit up',
+  'Polish',
+  'Quality control',
+  'Arranging delivery / collection',
+  'Invoiced',
+  'Complete'
+];
+
+let currentFilter = 'active';
+let nextId = 7;
+let logs = [];
+
+const STORAGE_KEY = 'trt_jobs_v1';
+const LOG_KEY = 'trt_logs_v1';
+
+function saveJobs() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(jobs)); } catch(e){}
+}
+function saveLogs() {
+  try { localStorage.setItem(LOG_KEY, JSON.stringify(logs.slice(0,50))); } catch(e){}
+}
+function loadData() {
+  try {
+    const j = localStorage.getItem(STORAGE_KEY);
+    if(j) { jobs = JSON.parse(j); nextId = Math.max(...jobs.map(x=>x.id))+1; }
+    const l = localStorage.getItem(LOG_KEY);
+    if(l) logs = JSON.parse(l);
+  } catch(e){}
+}
+
+let jobs = [
+  {id:1, name:'Mrs N Finlay',           reg:'SF59 NAF', vehicle:'Mercedes B Class',           addr:'6 Maple Grove, Bromborough',    inv:'02596', ref:'1429528', stage:12, added:'2026-05-01'},
+  {id:2, name:'Mrs Marnie Bennett',     reg:'SJ69 JJE', vehicle:'Audi Q3 S Line 35 TDI',     addr:'17 Plumley Gardens, Widnes',    inv:'02597', ref:'1430407', stage:10, added:'2026-05-06'},
+  {id:3, name:'Mrs Sylvia Rennie',      reg:'SA21 GLG', vehicle:'Audi Q3 S Line 35 TDI',     addr:'9 Pine Grove, Ladybank',        inv:'02598', ref:'1431420', stage:7,  added:'2026-05-06'},
+  {id:4, name:'Mr Zain Ul Abdin Memon', reg:'LR70 SRU', vehicle:'Toyota RAV4 Icon HEV',      addr:'34 Sandhill Road, Northampton', inv:'02599', ref:'1429944', stage:4,  added:'2026-05-07'},
+  {id:5, name:'Mr Dean Hancock',        reg:'SE70 ATK', vehicle:'Nissan Qashqai N-Connecta', addr:'5 Cumberland Close, Liverpool', inv:'02600', ref:'1428941', stage:3,  added:'2026-05-07'},
+  {id:6, name:'Mr Odel Kamara',         reg:'HV25 PHJ', vehicle:'BMW 218i M Sport',           addr:'9 Olive Vale, Wavertree',       inv:'02601', ref:'1431512', stage:13, added:'2026-05-04'},
+];
+
+loadData();
+
+function daysSince(d) {
+  return Math.floor((Date.now() - new Date(d)) / 86400000);
+}
+
+function addLog(msg, auto=false) {
+  const now = new Date();
+  const t = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+  logs.unshift({t, msg, auto});
+  saveLogs();
+  renderLog();
+}
+
+function renderLog() {
+  const el = document.getElementById('log-box');
+  if(!logs.length) {
+    el.innerHTML = '<div class="log-entry"><span class="log-time">—</span><span class="log-msg">No triggers yet.</span></div>';
+    return;
+  }
+  el.innerHTML = logs.slice(0,15).map(l => `
+    <div class="log-entry">
+      <span class="log-time">${l.t}</span>
+      ${l.auto ? '<span class="log-auto-badge">AUTO</span>' : ''}
+      <span class="log-msg ${l.auto?'auto':''}">${l.msg}</span>
+    </div>`).join('');
+}
+
+function renderStats() {
+  const inProgress = jobs.filter(j => j.stage < 12).length;
+  const invoiced   = jobs.filter(j => j.stage === 12).length;
+  const complete   = jobs.filter(j => j.stage === 13).length;
+  document.getElementById('stats-grid').innerHTML = `
+    <div class="stat-card blue"><div class="stat-val">${inProgress}</div><div class="stat-lbl">In progress</div></div>
+    <div class="stat-card amber"><div class="stat-val">${invoiced}</div><div class="stat-lbl">Invoiced</div></div>
+    <div class="stat-card green"><div class="stat-val">${complete}</div><div class="stat-lbl">Complete</div></div>
+    <div class="stat-card gray"><div class="stat-val">${jobs.length}</div><div class="stat-lbl">Total jobs</div></div>
+  `;
+}
+
+function pipClass(i, stage) {
+  if(stage === 13) return i <= 13 ? 'comp' : '';
+  if(stage === 12) return i < 12 ? 'done' : i === 12 ? 'inv' : '';
+  if(i < stage) return 'done';
+  if(i === stage) return 'active';
+  return '';
+}
+
+function render() {
+  const q  = (document.getElementById('search-input').value || '').toLowerCase();
+  const sf = document.getElementById('stage-filter').value;
+  const filtered = jobs.filter(j => {
+    const mq = !q || j.name.toLowerCase().includes(q) || j.reg.toLowerCase().includes(q) || j.vehicle.toLowerCase().includes(q);
+    const ms = sf === '' || j.stage === parseInt(sf);
+    const mf = currentFilter === 'all' ? true : currentFilter === 'invoiced' ? j.stage >= 12 : j.stage < 12;
+    return mq && ms && mf;
+  });
+
+  const el = document.getElementById('job-list');
+  if(!filtered.length) {
+    el.innerHTML = `<div class="empty-state">
+      <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <p>No jobs match your search</p>
+    </div>`;
+    renderStats();
+    return;
+  }
+
+  el.innerHTML = filtered.map(j => {
+    const days   = daysSince(j.added);
+    const dClass = days <= 7 ? 'days-ok' : days <= 14 ? 'days-warn' : 'days-over';
+    const pips   = STAGES.map((_,i) => `<div class="pip ${pipClass(i,j.stage)}" title="${STAGES[i]}"></div>`).join('');
+    const tags   = [];
+    if(j.stage >= 3)  tags.push(`<span class="tag tag-auth">Authorised</span>`);
+    if(j.stage >= 12) tags.push(`<span class="tag tag-inv">Invoiced</span>`);
+    if(j.stage === 13) tags.push(`<span class="tag tag-comp">Complete</span>`);
+    const opts = STAGES.map((s,i) => `<option value="${i}" ${j.stage===i?'selected':''}>${s}</option>`).join('');
+    const pct = Math.round((j.stage / 13) * 100);
+    return `
+    <div class="job-card" id="job-${j.id}">
+      <div class="job-header">
+        <span class="reg-plate">${j.reg}</span>
+        <div class="job-info">
+          <div class="job-name">${j.name} ${tags.join('')}</div>
+          <div class="job-vehicle">${j.vehicle}</div>
+        </div>
+        <div class="job-meta">
+          <span class="days-pill ${dClass}">${days}d</span>
+        </div>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-track">${pips}</div>
+        <div class="progress-label">
+          <span><strong>${STAGES[j.stage]}</strong></span>
+          <span>${pct}% complete</span>
+        </div>
+      </div>
+      <div class="job-footer">
+        <span class="job-refs"><span>INV</span> ${j.inv} &nbsp;·&nbsp; <span>REF</span> ${j.ref}</span>
+        <select class="stage-select" onchange="updateStage(${j.id}, this.value)">${opts}</select>
+        <button class="btn-icon" onclick="removeJob(${j.id})" title="Remove job" aria-label="Remove job">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+  renderStats();
+}
+
+function updateStage(id, stage) {
+  const j = jobs.find(x => x.id === id);
+  if(!j) return;
+  j.stage = parseInt(stage);
+  saveJobs();
+  addLog(`${j.reg} — ${j.name} moved to "${STAGES[j.stage]}"`);
+  render();
+}
+
+function removeJob(id) {
+  const j = jobs.find(x => x.id === id);
+  if(!j) return;
+  if(!confirm(`Remove ${j.reg} — ${j.name} from the dashboard?\n\nThis is typically done when a remittance has been received from ACG.`)) return;
+  jobs = jobs.filter(x => x.id !== id);
+  saveJobs();
+  addLog(`${j.reg} — ${j.name} removed from dashboard`);
+  render();
+}
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function populateStageSelects() {
+  const opts = STAGES.map((s,i) => `<option value="${i}">${s}</option>`).join('');
+  const sf   = document.getElementById('stage-filter');
+  if(sf) sf.innerHTML = '<option value="">All stages</option>' + opts;
+  const fs   = document.getElementById('f-stage');
+  if(fs) fs.innerHTML = opts;
+}
+
+function openModal(id) {
+  populateStageSelects();
+  if(id === 'sim-modal') updateSimReg();
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if(e.target === m) m.classList.remove('open'); });
+});
+
+function addJob() {
+  const name    = document.getElementById('f-name').value.trim();
+  const reg     = document.getElementById('f-reg').value.trim().toUpperCase();
+  const vehicle = document.getElementById('f-vehicle').value.trim();
+  const addr    = document.getElementById('f-addr').value.trim();
+  const inv     = document.getElementById('f-inv').value.trim();
+  const ref     = document.getElementById('f-ref').value.trim();
+  const stage   = parseInt(document.getElementById('f-stage').value);
+  if(!name || !reg || !vehicle) { alert('Please fill in customer name, registration and vehicle.'); return; }
+  jobs.push({ id: nextId++, name, reg, vehicle, addr, inv, ref, stage, added: new Date().toISOString().split('T')[0] });
+  saveJobs();
+  addLog(`New job added manually: ${reg} — ${name} at stage "${STAGES[stage]}"`);
+  closeModal('add-modal');
+  ['f-name','f-reg','f-vehicle','f-addr','f-inv','f-ref'].forEach(id => document.getElementById(id).value = '');
+  render();
+}
+
+function updateSimReg() {
+  const type = document.getElementById('sim-type').value;
+  const sel  = document.getElementById('sim-reg');
+  if(type === 'instruction') {
+    sel.innerHTML = '<option value="NEW">NEW — KP23 XYZ / Mr Test Customer / Vauxhall Astra</option>';
+  } else {
+    sel.innerHTML = jobs.map(j => `<option value="${j.id}">${j.reg} — ${j.name}</option>`).join('');
+  }
+}
+
+function runSim() {
+  const type = document.getElementById('sim-type').value;
+  const val  = document.getElementById('sim-reg').value;
+  if(type === 'instruction') {
+    jobs.push({ id: nextId++, name: 'Mr Test Customer', reg: 'KP23 XYZ', vehicle: 'Vauxhall Astra', addr: '1 Test Street, Liverpool', inv: '02602', ref: '1432000', stage: 0, added: new Date().toISOString().split('T')[0] });
+    saveJobs();
+    addLog('New instruction email detected — KP23 XYZ / Mr Test Customer added to dashboard at "Instructed"', true);
+  } else {
+    const j = jobs.find(x => x.id === parseInt(val));
+    if(!j) return;
+    if(type === 'authority') {
+      j.stage = 3;
+      addLog(`Engineer authority email detected for ${j.reg} (${j.name}) — auto-moved to "Authorised"`, true);
+    } else if(type === 'invoiced') {
+      j.stage = 12;
+      addLog(`Invoice sent to ACG confirmed for ${j.reg} (${j.name}) — auto-moved to "Invoiced"`, true);
+    } else if(type === 'remittance') {
+      jobs = jobs.filter(x => x.id !== parseInt(val));
+      addLog(`Remittance email from ACG detected for ${j.reg} (${j.name}) — job removed from dashboard`, true);
+    }
+    saveJobs();
+  }
+  closeModal('sim-modal');
+  render();
+}
+
+populateStageSelects();
+render();
+renderLog();
+</script>
+</body>
+</html>
