@@ -268,7 +268,7 @@ const STAGES = [
 ];
 
 let currentFilter = 'active';
-let nextId = 7;
+let nextId = 21;
 let logs = [];
 
 const STORAGE_KEY = 'trt_jobs_v1';
@@ -290,12 +290,29 @@ function loadData() {
 }
 
 let jobs = [
-  {id:1, name:'Mrs N Finlay',           reg:'SF59 NAF', vehicle:'Mercedes B Class',           addr:'6 Maple Grove, Bromborough',    inv:'02596', ref:'1429528', stage:12, added:'2026-05-01'},
-  {id:2, name:'Mrs Marnie Bennett',     reg:'SJ69 JJE', vehicle:'Audi Q3 S Line 35 TDI',     addr:'17 Plumley Gardens, Widnes',    inv:'02597', ref:'1430407', stage:10, added:'2026-05-06'},
-  {id:3, name:'Mrs Sylvia Rennie',      reg:'SA21 GLG', vehicle:'Audi Q3 S Line 35 TDI',     addr:'9 Pine Grove, Ladybank',        inv:'02598', ref:'1431420', stage:7,  added:'2026-05-06'},
-  {id:4, name:'Mr Zain Ul Abdin Memon', reg:'LR70 SRU', vehicle:'Toyota RAV4 Icon HEV',      addr:'34 Sandhill Road, Northampton', inv:'02599', ref:'1429944', stage:4,  added:'2026-05-07'},
-  {id:5, name:'Mr Dean Hancock',        reg:'SE70 ATK', vehicle:'Nissan Qashqai N-Connecta', addr:'5 Cumberland Close, Liverpool', inv:'02600', ref:'1428941', stage:3,  added:'2026-05-07'},
-  {id:6, name:'Mr Odel Kamara',         reg:'HV25 PHJ', vehicle:'BMW 218i M Sport',           addr:'9 Olive Vale, Wavertree',       inv:'02601', ref:'1431512', stage:13, added:'2026-05-04'},
+  // Invoiced
+  {id:1,  name:'Mrs N Finlay',              reg:'SF59 NAF', vehicle:'Mercedes B Class',              addr:'6 Maple Grove, Bromborough, CH62 7AZ',              inv:'02596', ref:'1429528', stage:12, added:'2026-04-21'},
+  // Authorised — invoices built
+  {id:2,  name:'Mrs Marnie Bennett',        reg:'SJ69 JJE', vehicle:'Audi Q3 S Line 35 TDI',        addr:'17 Plumley Gardens, Widnes, WA8 4PA',               inv:'02597', ref:'1430407', stage:3,  added:'2026-04-23'},
+  {id:3,  name:'Mrs Sylvia Rennie',         reg:'SA21 GLG', vehicle:'Audi Q3 S Line 35 TDI',        addr:'9 Pine Grove, Ladybank, Cupar, KY15 7NL',           inv:'02598', ref:'1431420', stage:3,  added:'2026-04-27'},
+  {id:4,  name:'Mr Zain Ul Abdin Memon',   reg:'LR70 SRU', vehicle:'Toyota RAV4 Icon HEV 4x2',     addr:'34 Sandhill Road, Northampton, NN5 5LH',            inv:'02599', ref:'1429944', stage:3,  added:'2026-04-20'},
+  {id:5,  name:'Mr Dean Hancock',          reg:'SE70 ATK', vehicle:'Nissan Qashqai N-Connecta',    addr:'5 Cumberland Close, Liverpool, L6 0DJ',             inv:'02600', ref:'1428941', stage:0,  added:'2026-04-18'},
+  {id:6,  name:'Mr Odel Kamara',           reg:'HV25 PHJ', vehicle:'BMW 218i M Sport',              addr:'9 Olive Vale, Wavertree, Liverpool, L15 8JH',       inv:'02601', ref:'1431512', stage:3,  added:'2026-04-28'},
+  {id:7,  name:'Mrs Jamie Waldron',        reg:'JU12 JAY', vehicle:'Smart Fortwo Passion MHD Auto', addr:'36 Reedsmere Close, Wigan, WN5 9DX',               inv:'02602', ref:'1429924', stage:3,  added:'2026-04-20'},
+  // New jobs — awaiting authority
+  {id:8,  name:'Mr Benjamin Culpin',       reg:'MW18 DTX', vehicle:'Tesla Model X 100d',            addr:'2 Ashcroft Rd, Knowsley Industrial Park, L33 7TW', inv:'—',     ref:'1431698', stage:0,  added:'2026-05-11'},
+  {id:9,  name:'Mr David Thornley',        reg:'CGZ 3938', vehicle:'Nissan Qashqai',                addr:'73 Mayfair Road, Wythenshawe, M22 9ZE',             inv:'—',     ref:'1433195', stage:0,  added:'2026-05-08'},
+  {id:10, name:'Mrs Christine White',      reg:'NL14 SZF', vehicle:'Toyota Yaris',                  addr:'11 Quay Place, Preston Brook, Runcorn, WA7 3LD',    inv:'—',     ref:'1432757', stage:0,  added:'2026-05-07'},
+  {id:11, name:'Mr Michael J Lynch',       reg:'GL69 YWR', vehicle:'VW Crafter CR35 Trendline',     addr:'41 Spa Road, Atherton, Manchester, M46 9NR',        inv:'—',     ref:'1432472', stage:0,  added:'2026-05-07'},
+  {id:12, name:'Mrs Jamie Waldron (ACG2)', reg:'—',        vehicle:'Awaiting details',              addr:'36 Reedsmere Close, Wigan, WN5 9DX',               inv:'—',     ref:'1432839', stage:0,  added:'2026-05-06'},
+  {id:13, name:'Miss Rebecca Else',        reg:'WE56 BEX', vehicle:'BMW X4 xDrive20d M Sport',      addr:'3 Coll Drive, Urmston, Manchester, M41 7FX',        inv:'—',     ref:'1432436', stage:0,  added:'2026-05-05'},
+  {id:14, name:'Mrs Dianne Partington',    reg:'BN22 KNO', vehicle:'MG ZS Exclusive T-GDI',         addr:'185 Woodlands Road, St Helens, WA11 9EF',           inv:'—',     ref:'1432229', stage:0,  added:'2026-05-05'},
+  {id:15, name:'Ms Louise Dean',           reg:'BP15 MVU', vehicle:'Skoda Rapid',                   addr:'10 Winsford Close, Haydock, St Helens, WA11 0LQ',  inv:'—',     ref:'1431966', stage:0,  added:'2026-04-30'},
+  {id:16, name:'Mrs Esther Pike',          reg:'—',        vehicle:'Awaiting details',              addr:'Awaiting details',                                  inv:'—',     ref:'1431475', stage:0,  added:'2026-04-29'},
+  {id:17, name:'Mr Stephen Rigby',         reg:'—',        vehicle:'Awaiting details',              addr:'Awaiting details',                                  inv:'—',     ref:'1431009', stage:0,  added:'2026-04-29'},
+  {id:18, name:'Mr Stuart Stirling',       reg:'—',        vehicle:'Awaiting details',              addr:'Awaiting details',                                  inv:'—',     ref:'1431255', stage:0,  added:'2026-04-27'},
+  {id:19, name:'Mr Jacob Jenner',          reg:'—',        vehicle:'Awaiting details',              addr:'Awaiting details',                                  inv:'—',     ref:'1431067', stage:0,  added:'2026-04-24'},
+  {id:20, name:'Mr Gaus Chand',            reg:'—',        vehicle:'Awaiting details',              addr:'Awaiting details',                                  inv:'—',     ref:'1429943', stage:0,  added:'2026-04-24'},
 ];
 
 loadData();
