@@ -321,8 +321,8 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 <script>
 // ─── CONFIG ───────────────────────────────────────────────
 // Replace these with your actual Supabase details
-const SUPABASE_URL = 'https://kgohkilvxqjfadhyasyk.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_i2I2Rtl_1skzxqBGXxpjqA_icdg62u6';
+const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 const SITE_URL = window.location.origin;
 
 // ─── STAGES ───────────────────────────────────────────────
@@ -450,11 +450,6 @@ function renderJobs() {
       </div>
       <textarea class="notes-area" placeholder="Add notes…" onblur="saveNotes('${j.id}', this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.blur()}">${j.notes || ''}</textarea>
       <div class="notes-saved" id="saved-${j.id}">✓ Saved</div>
-      <div class="notes-wrap">
-        <textarea class="notes-textarea" id="notes-${j.id}" placeholder="Add notes…" rows="2">${j.notes || ''}</textarea>
-        <button class="notes-save" onclick="saveNotes('${j.id}')">Save note</button>
-        <span class="notes-saved" id="notes-saved-${j.id}" style="display:none">✓ Saved</span>
-      </div>
     </div>`;
   }).join('');
 
