@@ -85,8 +85,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .btn-icon:hover { border-color: var(--red); color: var(--red); background: var(--red-light); }
 .btn-link { background: none; border: 1px solid var(--border-strong); border-radius: 6px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--muted); font-size: 14px; text-decoration: none; }
 .btn-link:hover { border-color: var(--blue); color: var(--blue); }
-
-/* GRID */
+.notes-area { width: 100%; font-size: 12px; font-family: inherit; border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; resize: none; background: var(--bg); color: var(--text); margin-top: 8px; min-height: 36px; transition: border-color 0.15s; }
+.notes-area:focus { outline: none; border-color: var(--blue); background: var(--card); }
+.notes-area::placeholder { color: var(--faint); }
+.notes-saved { font-size: 10px; color: var(--green); margin-top: 2px; display: none; }
 .job-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; margin-bottom: 20px; }
 .job-tile { background: var(--card); border: 2px solid var(--border); border-radius: var(--radius); padding: 14px 10px 12px; cursor: pointer; transition: all 0.15s; display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative; }
 .job-tile:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-color: var(--blue); }
@@ -165,7 +167,12 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .btn-icon:hover { border-color: var(--red); color: var(--red); background: var(--red-light); }
 .btn-link { background: none; border: 1px solid var(--border-strong); border-radius: 6px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--muted); font-size: 14px; text-decoration: none; }
 .btn-link:hover { border-color: var(--blue); color: var(--blue); }
-.empty-state { text-align: center; padding: 3rem; color: var(--faint); font-size: 14px; }
+.notes-wrap { margin-top: 8px; }
+.notes-textarea { width: 100%; font-size: 12px; font-family: inherit; padding: 7px 10px; border: 1px solid var(--border-strong); border-radius: 6px; background: var(--bg); color: var(--text); resize: none; min-height: 54px; line-height: 1.4; }
+.notes-textarea:focus { outline: none; border-color: var(--blue); background: var(--card); }
+.notes-save { margin-top: 4px; font-size: 11px; padding: 3px 10px; border-radius: 5px; border: 1px solid var(--border-strong); background: var(--card); cursor: pointer; color: var(--muted); }
+.notes-save:hover { background: var(--blue); color: #fff; border-color: var(--blue); }
+.notes-saved { color: var(--green); font-size: 11px; margin-left: 6px; }
 .log-section { margin-top: 24px; }
 .log-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--faint); margin-bottom: 8px; }
 .log-box { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; max-height: 200px; overflow-y: auto; }
@@ -441,6 +448,13 @@ function renderJobs() {
         <button class="btn-icon" onclick="copyLink('${trackerUrl}')" title="Copy tracker link">📋</button>
         <button class="btn-icon" onclick="removeJob('${j.id}', '${(j.name||'').replace(/'/g,"\\'")}', '${j.reg||''}')" title="Remove job" style="color:var(--red)">✕</button>
       </div>
+      <textarea class="notes-area" placeholder="Add notes…" onblur="saveNotes('${j.id}', this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.blur()}">${j.notes || ''}</textarea>
+      <div class="notes-saved" id="saved-${j.id}">✓ Saved</div>
+      <div class="notes-wrap">
+        <textarea class="notes-textarea" id="notes-${j.id}" placeholder="Add notes…" rows="2">${j.notes || ''}</textarea>
+        <button class="notes-save" onclick="saveNotes('${j.id}')">Save note</button>
+        <span class="notes-saved" id="notes-saved-${j.id}" style="display:none">✓ Saved</span>
+      </div>
     </div>`;
   }).join('');
 
@@ -552,6 +566,17 @@ async function addJob() {
   closeModal('add-modal');
   ['f-name','f-reg','f-vehicle','f-addr','f-inv','f-ref'].forEach(id => document.getElementById(id).value = '');
   await refreshJobs();
+}
+
+async function saveNotes(id, el) {
+  const notes = el.value;
+  const { error } = await db.from('jobs').update({ notes, updated_at: new Date().toISOString() }).eq('id', id);
+  if (!error) {
+    const j = jobs.find(x => x.id === id);
+    if (j) j.notes = notes;
+    const saved = document.getElementById('saved-' + id);
+    if (saved) { saved.style.display = 'block'; setTimeout(() => saved.style.display = 'none', 2000); }
+  }
 }
 
 function copyLink(url) {
