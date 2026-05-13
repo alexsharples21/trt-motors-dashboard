@@ -89,6 +89,12 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .notes-area:focus { outline: none; border-color: var(--blue); background: var(--card); }
 .notes-area::placeholder { color: var(--faint); }
 .notes-saved { font-size: 10px; color: var(--green); margin-top: 2px; display: none; }
+.damage-section { margin-top: 8px; }
+.damage-toggle { background: none; border: 1px solid var(--border-strong); border-radius: 6px; padding: 5px 10px; font-size: 11px; font-family: inherit; cursor: pointer; color: var(--muted); width: 100%; text-align: left; display: flex; align-items: center; justify-content: space-between; }
+.damage-toggle:hover { border-color: var(--blue); color: var(--blue); }
+.damage-toggle.has-damage { background: #FFF8E6; border-color: #F0C040; color: #7A5200; }
+.damage-body { display: none; background: #FFF8E6; border: 1px solid #F0C040; border-radius: 6px; padding: 10px 12px; margin-top: 4px; font-size: 12px; color: #5a3e00; line-height: 1.5; }
+.damage-body.open { display: block; }
 .job-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; margin-bottom: 20px; }
 .job-tile { background: var(--card); border: 2px solid var(--border); border-radius: var(--radius); padding: 14px 10px 12px; cursor: pointer; transition: all 0.15s; display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative; }
 .job-tile:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-color: var(--blue); }
@@ -451,6 +457,13 @@ function renderJobs() {
       </div>
       <textarea class="notes-area" placeholder="Add notes…" onblur="saveNotes('${j.id}', this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.blur()}">${j.notes || ''}</textarea>
       <div class="notes-saved" id="saved-${j.id}">✓ Saved</div>
+      ${j.damage ? `
+      <div class="damage-section">
+        <button class="damage-toggle has-damage" onclick="toggleDamage('${j.id}')">
+          <span>🔧 Damage details</span><span id="damage-arrow-${j.id}">▼</span>
+        </button>
+        <div class="damage-body" id="damage-body-${j.id}">${j.damage}</div>
+      </div>` : ''}
     </div>`;
   }).join('');
 
@@ -562,6 +575,18 @@ async function addJob() {
   closeModal('add-modal');
   ['f-name','f-reg','f-vehicle','f-addr','f-inv','f-ref'].forEach(id => document.getElementById(id).value = '');
   await refreshJobs();
+}
+
+function toggleDamage(id) {
+  const body = document.getElementById('damage-body-' + id);
+  const arrow = document.getElementById('damage-arrow-' + id);
+  if (body.classList.contains('open')) {
+    body.classList.remove('open');
+    arrow.textContent = '▼';
+  } else {
+    body.classList.add('open');
+    arrow.textContent = '▲';
+  }
 }
 
 async function saveNotes(id, el) {
