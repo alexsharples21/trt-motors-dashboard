@@ -429,6 +429,7 @@ function renderJobs() {
           <div class="job-name">${j.name || '—'} ${tags.join('')}</div>
           <div class="job-vehicle">${j.vehicle || '—'}</div>
           <div class="job-addr">${j.mobile ? '📱 ' + j.mobile : 'No mobile'}</div>
+          <div class="job-addr">${j.address || ''}</div>
         </div>
         <span class="days-pill ${dClass}">${days}d</span>
       </div>
