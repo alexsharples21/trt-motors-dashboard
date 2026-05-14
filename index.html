@@ -261,6 +261,8 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 
     <div class="tabs">
       <button class="tab-btn active" onclick="setFilter('active',this)">Active</button>
+      <button class="tab-btn" onclick="setFilter('authorised',this)">✓ Authorised</button>
+      <button class="tab-btn" onclick="setFilter('awaiting',this)">Awaiting auth</button>
       <button class="tab-btn" onclick="setFilter('invoiced',this)">Invoiced / Complete</button>
       <button class="tab-btn" onclick="setFilter('all',this)">All jobs</button>
     </div>
@@ -407,7 +409,11 @@ function renderJobs() {
   const filtered = jobs.filter(j => {
     const mq = !q || (j.name||'').toLowerCase().includes(q) || (j.reg||'').toLowerCase().includes(q) || (j.vehicle||'').toLowerCase().includes(q);
     const ms = sf === '' || j.stage === parseInt(sf);
-    const mf = currentFilter === 'all' ? true : currentFilter === 'invoiced' ? j.stage >= 5 : j.stage < 5;
+    const mf = currentFilter === 'all' ? true
+             : currentFilter === 'invoiced' ? j.stage >= 5
+             : currentFilter === 'authorised' ? j.auth_confirmed && j.stage < 5
+             : currentFilter === 'awaiting' ? !j.auth_confirmed
+             : j.stage < 5;
     return mq && ms && mf;
   });
 
