@@ -340,7 +340,6 @@ const STAGES = [
   { label: 'New instruction',        sub: 'Job instruction received from ACG' },
   { label: 'On site',                sub: 'Vehicle collected and with us' },
   { label: 'Estimated',              sub: 'Damage assessed and costed' },
-  { label: 'Authorised',             sub: 'Engineer has approved the repair' },
   { label: 'In repair',              sub: 'Repair work underway' },
   { label: 'Collection / Delivery',  sub: 'Arranging vehicle return to customer' },
   { label: 'Invoiced',               sub: 'Invoice submitted to ACG' },
@@ -387,8 +386,8 @@ function daysSince(d) {
 }
 
 function pipClass(i, stage) {
-  if (stage === 7) return i <= 7 ? 'comp' : '';
-  if (stage === 6) return i < 6 ? 'done' : i === 6 ? 'inv' : '';
+  if (stage === 6) return i <= 6 ? 'comp' : '';
+  if (stage === 5) return i < 5 ? 'done' : i === 5 ? 'inv' : '';
   if (i < stage) return 'done';
   if (i === stage) return 'active';
   return '';
@@ -396,7 +395,7 @@ function pipClass(i, stage) {
 
 function tileClass(j) {
   if (j.stage >= 7) return 'stage-comp';
-  if (j.stage >= 6) return 'stage-inv';
+  if (j.stage >= 5) return 'stage-inv';
   if (j.stage >= 3) return 'stage-auth';
   return 'stage-0';
 }
@@ -408,7 +407,7 @@ function renderJobs() {
   const filtered = jobs.filter(j => {
     const mq = !q || (j.name||'').toLowerCase().includes(q) || (j.reg||'').toLowerCase().includes(q) || (j.vehicle||'').toLowerCase().includes(q);
     const ms = sf === '' || j.stage === parseInt(sf);
-    const mf = currentFilter === 'all' ? true : currentFilter === 'invoiced' ? j.stage >= 6 : j.stage < 6;
+    const mf = currentFilter === 'all' ? true : currentFilter === 'invoiced' ? j.stage >= 5 : j.stage < 5;
     return mq && ms && mf;
   });
 
@@ -425,14 +424,14 @@ function renderJobs() {
     const pips = STAGES.map((_, i) => `<div class="pip ${pipClass(i, j.stage)}"></div>`).join('');
     const pct = Math.round((j.stage / 13) * 100);
     const tags = [];
-    if (j.auth_confirmed && j.stage >= 3) tags.push(`<span class="tag tag-auth">Auth ✓</span>`);
-    else if (!j.auth_confirmed && j.stage < 3) tags.push(`<span class="tag tag-no-auth">Awaiting auth</span>`);
-    if (j.stage >= 6) tags.push(`<span class="tag tag-inv">Invoiced</span>`);
+    if (j.auth_confirmed) tags.push(`<span class="tag tag-auth">✓ Authorised</span>`);
+    else tags.push(`<span class="tag tag-no-auth">Awaiting auth</span>`);
+    if (j.stage >= 5) tags.push(`<span class="tag tag-inv">Invoiced</span>`);
     const opts = STAGES.map((s, i) => `<option value="${i}" ${j.stage===i?'selected':''}>${s.label}</option>`).join('');
     const trackerUrl = `${SITE_URL}/track/${(j.reg||'').replace(/\s/g,'')}`;
 
     return `
-    <div class="job-card${j.stage === 0 ? ' stage-new' : (j.stage >= 1 && j.stage <= 3) ? ' stage-progress' : j.stage === 6 ? ' stage-invoiced' : ''}">
+    <div class="job-card${j.stage === 0 ? ' stage-new' : (j.stage >= 1 && j.stage <= 2) ? ' stage-progress' : j.stage === 5 ? ' stage-invoiced' : ''}">
       <div class="job-header">
         <span class="reg-plate">${j.reg || '—'}</span>
         <div class="job-info">
@@ -533,9 +532,9 @@ async function updateStageFromDetail(id, stage) {
 }
 
 function renderStats() {
-  const inProg = jobs.filter(j => j.stage < 6).length;
-  const inv = jobs.filter(j => j.stage === 6).length;
-  const comp = jobs.filter(j => j.stage === 7).length;
+  const inProg = jobs.filter(j => j.stage < 5).length;
+  const inv = jobs.filter(j => j.stage === 5).length;
+  const comp = jobs.filter(j => j.stage === 6).length;
   document.getElementById('stats-grid').innerHTML = `
     <div class="stat-card blue"><div class="stat-val">${inProg}</div><div class="stat-lbl">In progress</div></div>
     <div class="stat-card amber"><div class="stat-val">${inv}</div><div class="stat-lbl">Invoiced</div></div>
@@ -669,7 +668,7 @@ async function showTracker(reg) {
 
   const job = data[0];
   const stage = job.stage || 0;
-  const isComplete = stage === 7;
+  const isComplete = stage === 6;
 
   const stageItems = STAGES.map((s, i) => {
     const done = i < stage;
