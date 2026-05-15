@@ -153,6 +153,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .tag-auth { background: #E6F1FB; color: #0C447C; }
 .tag-inv { background: var(--green-light); color: #0F6E56; }
 .tag-no-auth { background: var(--amber-light); color: var(--amber); }
+.tag-supp { background: #F0E6FB; color: #5B2D87; }
 .days-pill { font-size: 11px; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
 .days-ok { background: var(--green-light); color: #0F6E56; }
 .days-warn { background: var(--amber-light); color: var(--amber); }
@@ -354,7 +355,7 @@ async function showAdmin() {
 }
 
 async function refreshJobs() {
-  const { data, error } = await db.from('jobs').select('*').order('added_date', { ascending: false });
+  const { data, error } = await db.from('jobs_with_supplementary').select('*').order('added_date', { ascending: false });
   if (error) { console.error(error); return; }
   jobs = data || [];
   renderJobs();
@@ -409,6 +410,14 @@ function renderJobs() {
     const tags = [];
     if (j.auth_confirmed) tags.push(`<span class="tag tag-auth">✓ Authorised</span>`);
     else tags.push(`<span class="tag tag-no-auth">Awaiting auth</span>`);
+    if (j.has_supplementary) {
+      let suppLabel = 'Received supplementary';
+      if (j.latest_supplementary_date) {
+        const [y, m, d] = j.latest_supplementary_date.split('-');
+        suppLabel = `Supplementary ${d}/${m}/${y.slice(2)}`;
+      }
+      tags.push(`<span class="tag tag-supp">${suppLabel}</span>`);
+    }
     if (j.stage >= 5) tags.push(`<span class="tag tag-inv">Invoiced</span>`);
     const opts = STAGES.map((s, i) => `<option value="${i}" ${j.stage===i?'selected':''}>${s.label}</option>`).join('');
     const trackerUrl = `${SITE_URL}/track/${(j.reg||'').replace(/\s/g,'')}`;
