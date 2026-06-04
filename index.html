@@ -348,9 +348,15 @@ const STAGES = [
   { label: 'Estimated',              sub: 'Damage assessed and costed' },
   { label: 'In repair',              sub: 'Repair work underway' },
   { label: 'Collection / Delivery',  sub: 'Arranging vehicle return to customer' },
+  { label: 'Needs Invoicing',        sub: 'Repair complete — ready to raise the invoice' },
   { label: 'Invoiced',               sub: 'Invoice submitted to ACG' },
   { label: 'Complete',               sub: 'Repair finished — all done' },
 ];
+// Stage indices derived from labels, so the logic keeps working even if
+// stages are inserted or re-ordered (don't hard-code stage numbers below).
+const INVOICED_STAGE = STAGES.findIndex(s => s.label === 'Invoiced');
+const COMPLETE_STAGE = STAGES.findIndex(s => s.label === 'Complete');
+const LAST_STAGE = STAGES.length - 1;
 // ─── INIT ─────────────────────────────────────────────────
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -406,15 +412,15 @@ function escAttr(s) {
     .replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 function pipClass(i, stage) {
-  if (stage === 6) return i <= 6 ? 'comp' : '';
-  if (stage === 5) return i < 5 ? 'done' : i === 5 ? 'inv' : '';
+  if (stage === COMPLETE_STAGE) return i <= COMPLETE_STAGE ? 'comp' : '';
+  if (stage === INVOICED_STAGE) return i < INVOICED_STAGE ? 'done' : i === INVOICED_STAGE ? 'inv' : '';
   if (i < stage) return 'done';
   if (i === stage) return 'active';
   return '';
 }
 function tileClass(j) {
-  if (j.stage >= 7) return 'stage-comp';
-  if (j.stage >= 5) return 'stage-inv';
+  if (j.stage >= COMPLETE_STAGE) return 'stage-comp';
+  if (j.stage >= INVOICED_STAGE) return 'stage-inv';
   if (j.stage >= 3) return 'stage-auth';
   return 'stage-0';
 }
@@ -425,10 +431,10 @@ function renderJobs() {
     const mq = !q || (j.name||'').toLowerCase().includes(q) || (j.reg||'').toLowerCase().includes(q) || (j.vehicle||'').toLowerCase().includes(q);
     const ms = sf === '' || j.stage === parseInt(sf);
     const mf = currentFilter === 'all' ? true
-             : currentFilter === 'invoiced' ? j.stage >= 5
-             : currentFilter === 'authorised' ? j.auth_confirmed && j.stage < 5
+             : currentFilter === 'invoiced' ? j.stage >= INVOICED_STAGE
+             : currentFilter === 'authorised' ? j.auth_confirmed && j.stage < INVOICED_STAGE
              : currentFilter === 'awaiting' ? !j.auth_confirmed
-             : j.stage < 5;
+             : j.stage < INVOICED_STAGE;
     return mq && ms && mf;
   });
   const el = document.getElementById('job-list');
@@ -441,7 +447,7 @@ function renderJobs() {
     const days = daysSince(j.added_date);
     const dClass = days <= 7 ? 'days-ok' : days <= 14 ? 'days-warn' : 'days-over';
     const pips = STAGES.map((_, i) => `<div class="pip ${pipClass(i, j.stage)}"></div>`).join('');
-    const pct = Math.round((j.stage / 13) * 100);
+    const pct = Math.round((j.stage / LAST_STAGE) * 100);
     const tags = [];
     if (j.auth_confirmed) tags.push(`<span class="tag tag-auth">✓ Authorised</span>`);
     else tags.push(`<span class="tag tag-no-auth">Awaiting auth</span>`);
@@ -453,11 +459,11 @@ function renderJobs() {
       }
       tags.push(`<span class="tag tag-supp">${suppLabel}</span>`);
     }
-    if (j.stage >= 5) tags.push(`<span class="tag tag-inv">Invoiced</span>`);
+    if (j.stage >= INVOICED_STAGE) tags.push(`<span class="tag tag-inv">Invoiced</span>`);
     const opts = STAGES.map((s, i) => `<option value="${i}" ${j.stage===i?'selected':''}>${s.label}</option>`).join('');
     const trackerUrl = `${SITE_URL}/track/${(j.reg||'').replace(/\s/g,'')}`;
     return `
-    <div class="job-card${j.stage === 0 ? ' stage-new' : (j.stage >= 1 && j.stage <= 2) ? ' stage-progress' : j.stage === 5 ? ' stage-invoiced' : ''}">
+    <div class="job-card${j.stage === 0 ? ' stage-new' : (j.stage >= 1 && j.stage <= 2) ? ' stage-progress' : j.stage === INVOICED_STAGE ? ' stage-invoiced' : ''}">
       <div class="job-header">
         <span class="reg-plate">${j.reg || '—'}</span>
         <div class="job-info">
@@ -506,7 +512,7 @@ function openDetail(id) {
   const j = jobs.find(x => x.id === id);
   if (!j) return;
   const pips = STAGES.map((_, i) => `<div class="detail-pip ${pipClass(i, j.stage)}"></div>`).join('');
-  const pct = Math.round((j.stage / 13) * 100);
+  const pct = Math.round((j.stage / LAST_STAGE) * 100);
   const opts = STAGES.map((s, i) => `<option value="${i}" ${j.stage===i?'selected':''}>${s.label}</option>`).join('');
   const trackerUrl = `${SITE_URL}/track/${(j.reg||'').replace(/\s/g,'')}`;
   const stageItems = STAGES.map((s, i) => {
@@ -555,9 +561,9 @@ async function updateStageFromDetail(id, stage) {
   openDetail(id);
 }
 function renderStats() {
-  const inProg = jobs.filter(j => j.stage < 5).length;
-  const inv = jobs.filter(j => j.stage === 5).length;
-  const comp = jobs.filter(j => j.stage === 6).length;
+  const inProg = jobs.filter(j => j.stage < INVOICED_STAGE).length;
+  const inv = jobs.filter(j => j.stage === INVOICED_STAGE).length;
+  const comp = jobs.filter(j => j.stage === COMPLETE_STAGE).length;
   document.getElementById('stats-grid').innerHTML = `
     <div class="stat-card blue"><div class="stat-val">${inProg}</div><div class="stat-lbl">In progress</div></div>
     <div class="stat-card amber"><div class="stat-val">${inv}</div><div class="stat-lbl">Invoiced</div></div>
@@ -787,7 +793,7 @@ async function showTracker(reg) {
   }
   const job = data[0];
   const stage = job.stage || 0;
-  const isComplete = stage === 6;
+  const isComplete = stage === COMPLETE_STAGE;
   const stageItems = STAGES.map((s, i) => {
     const done = i < stage;
     const active = i === stage;
