@@ -28,7 +28,6 @@
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-
 /* SHARED */
 .header { background: var(--blue); padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
 .header-logo { color: #fff; font-weight: 600; font-size: 17px; letter-spacing: 0.5px; }
@@ -41,7 +40,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .btn-primary:hover { background: #0000cc; }
 .btn-header { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); color: #fff; padding: 6px 14px; border-radius: 8px; font-size: 13px; font-family: inherit; cursor: pointer; display: flex; align-items: center; gap: 6px; }
 .btn-header:hover { background: rgba(255,255,255,0.25); }
-
 /* ADMIN DASHBOARD */
 #admin-view { display: none; }
 .stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 24px; }
@@ -114,7 +112,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .tile-prog-fill { height: 100%; border-radius: 2px; background: var(--blue); transition: width 0.3s; }
 .tile-prog-fill.auth { background: #1D9E75; }
 .tile-prog-fill.comp { background: #888; }
-
 /* JOB DETAIL MODAL */
 .detail-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: flex-end; justify-content: center; padding: 0; }
 .detail-overlay.open { display: flex; }
@@ -180,7 +177,25 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
 .loading { text-align: center; padding: 3rem; color: var(--muted); font-size: 14px; }
-
+/* WEEK / REPAIR SCHEDULE */
+#week-view { display: none; }
+.week-intro { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+.week-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 12px; }
+.week-card:hover { border-color: var(--border-strong); }
+.ready-badge { font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 600; background: var(--green-light); color: #0F6E56; }
+.check-section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--faint); margin: 14px 0 6px; }
+.check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
+.chk { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text); cursor: pointer; padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); user-select: none; }
+.chk:hover { border-color: var(--border-strong); }
+.chk input { width: 16px; height: 16px; accent-color: var(--blue); cursor: pointer; flex-shrink: 0; }
+.chk.on { background: var(--green-light); border-color: #5CB87A; color: #0F6E56; font-weight: 500; }
+.sub-chk { background: #E6F1FB; border-color: #90BEE8; }
+.sub-chk.on { background: var(--green-light); border-color: #5CB87A; color: #0F6E56; }
+.sub-text { width: 100%; margin-top: 8px; padding: 8px 12px; border: 1px solid #F0C040; background: #FFF8E6; border-radius: var(--radius-sm); font-size: 13px; font-family: inherit; color: #5a3e00; }
+.sub-text::placeholder { color: #b08a3c; }
+.sub-text:focus { outline: none; border-color: var(--amber); }
+.week-select { font-size: 12px; padding: 5px 8px; border: 1px solid var(--border-strong); border-radius: 6px; font-family: inherit; background: var(--card); cursor: pointer; }
+.week-empty { text-align: center; padding: 3rem 1rem; color: var(--muted); font-size: 14px; line-height: 1.7; }
 /* CUSTOMER TRACKER */
 #tracker-view { display: none; }
 .tracker-wrap { max-width: 500px; margin: 0 auto; padding: 24px 20px; }
@@ -212,15 +227,14 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .tracker-contact strong { color: var(--text); }
 .tracker-not-found { text-align: center; padding: 3rem 1rem; }
 .tracker-not-found h2 { font-size: 18px; margin-bottom: 8px; }
-
 @media (max-width: 640px) {
   .stats-grid { grid-template-columns: repeat(2,1fr); }
   .form-grid { grid-template-columns: 1fr; }
+  .check-grid { grid-template-columns: 1fr; }
 }
 </style>
 </head>
 <body>
-
 <!-- ═══════════════════════════════════════════════ -->
 <!-- ADMIN DASHBOARD                                  -->
 <!-- ═══════════════════════════════════════════════ -->
@@ -231,15 +245,14 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
     </div>
     <div style="display:flex;gap:8px;align-items:center">
       <span style="color:rgba(255,255,255,0.7);font-size:11px"><span class="live-dot"></span>Live</span>
+      <button class="btn-header" onclick="showWeek('this')">📅 Repair schedule</button>
       <button class="btn-header" onclick="openModal('add-modal')">+ Add job</button>
       <a class="btn-header" href="https://web-production-eb7dd.up.railway.app/manual-invoice" target="_blank" rel="noopener" style="text-decoration:none">+ New invoice</a>
       <button class="btn-header" onclick="refreshJobs()">↻ Refresh</button>
     </div>
   </header>
-
   <div class="container">
     <div class="stats-grid" id="stats-grid"></div>
-
     <div class="tabs">
       <button class="tab-btn active" onclick="setFilter('active',this)">Active</button>
       <button class="tab-btn" onclick="setFilter('authorised',this)">✓ Authorised</button>
@@ -247,7 +260,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
       <button class="tab-btn" onclick="setFilter('invoiced',this)">Invoiced / Complete</button>
       <button class="tab-btn" onclick="setFilter('all',this)">All jobs</button>
     </div>
-
     <div class="toolbar">
       <div class="search-wrap">
         <span class="search-icon">⌕</span>
@@ -257,9 +269,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
         <option value="">All stages</option>
       </select>
     </div>
-
     <div id="job-list"></div>
-
 <!-- JOB DETAIL SHEET -->
 <div class="detail-overlay" id="detail-modal" onclick="closeDetail(event)">
   <div class="detail-sheet" id="detail-sheet">
@@ -267,14 +277,32 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
     <div id="detail-content"></div>
   </div>
 </div>
-
     <div class="log-section">
       <div class="log-title">Activity log</div>
       <div class="log-box" id="log-box"></div>
     </div>
   </div>
 </div>
-
+<!-- ═══════════════════════════════════════════════ -->
+<!-- REPAIR SCHEDULE (THIS WEEK / NEXT WEEK)          -->
+<!-- ═══════════════════════════════════════════════ -->
+<div id="week-view">
+  <header class="header">
+    <div class="header-logo">TRT Motors — Repair schedule</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn-header" onclick="showDash()">← Dashboard</button>
+      <button class="btn-header" onclick="refreshJobs()">↻ Refresh</button>
+    </div>
+  </header>
+  <div class="container">
+    <div class="tabs">
+      <button class="tab-btn active" id="wt-this" onclick="setWeekTab('this')">📅 This week</button>
+      <button class="tab-btn" id="wt-next" onclick="setWeekTab('next')">📆 Next week</button>
+    </div>
+    <div class="week-intro" id="week-intro"></div>
+    <div id="week-list"></div>
+  </div>
+</div>
 <!-- ═══════════════════════════════════════════════ -->
 <!-- CUSTOMER TRACKER                                 -->
 <!-- ═══════════════════════════════════════════════ -->
@@ -283,12 +311,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
     <div id="tracker-content"></div>
   </div>
 </div>
-
 <!-- LOADING -->
 <div id="loading-view" class="loading">
   <p>Loading TRT Motors…</p>
 </div>
-
 <!-- ADD JOB MODAL -->
 <div class="modal-overlay" id="add-modal">
   <div class="modal">
@@ -310,13 +336,11 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
     </div>
   </div>
 </div>
-
 <script>
 // ─── CONFIG ───────────────────────────────────────────────
 const SUPABASE_URL = 'https://kgohkilvxqjfadhyasyk.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_i2I2Rtl_1skzxqBGXxpjqA_icdg62u6';
 const SITE_URL = window.location.origin;
-
 // ─── STAGES ───────────────────────────────────────────────
 const STAGES = [
   { label: 'New instruction',        sub: 'Job instruction received from ACG' },
@@ -327,24 +351,28 @@ const STAGES = [
   { label: 'Invoiced',               sub: 'Invoice submitted to ACG' },
   { label: 'Complete',               sub: 'Repair finished — all done' },
 ];
-
 // ─── INIT ─────────────────────────────────────────────────
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
 let jobs = [];
 let logs = [];
 let currentFilter = 'active';
-
+let weekTab = 'this';
 const path = window.location.pathname;
 const trackMatch = path.match(/\/track\/([A-Z0-9]+)/i);
-
 if (trackMatch) {
   showTracker(trackMatch[1].toUpperCase().replace(/\s/g, ''));
 } else {
-  showAdmin();
+  showAdmin().then(() => {
+    if ((window.location.hash || '').replace('#', '').indexOf('week') === 0) showWeek();
+  });
 }
-
+// Keep browser back/forward in sync with the schedule view
+window.addEventListener('hashchange', () => {
+  if (trackMatch) return;
+  const h = (window.location.hash || '').replace('#', '');
+  if (h.indexOf('week') === 0) showWeek(); else showDash();
+});
 // ─── ADMIN ────────────────────────────────────────────────
 async function showAdmin() {
   document.getElementById('loading-view').style.display = 'none';
@@ -353,18 +381,30 @@ async function showAdmin() {
   await refreshJobs();
   setInterval(refreshJobs, 30000);
 }
-
 async function refreshJobs() {
   const { data, error } = await db.from('jobs_with_supplementary').select('*').order('added_date', { ascending: false });
   if (error) { console.error(error); return; }
   jobs = data || [];
+  // Merge the schedule / parts-checklist fields straight from the base table,
+  // so they're always present even if the view doesn't expose them.
+  const { data: extra, error: exErr } = await db.from('jobs')
+    .select('id,repair_week,parts_ordered,parts_on_site,parts_on_backorder,backorder_part,is_estimated,needs_supplementary,supplementary_sent');
+  if (!exErr && extra) {
+    const map = {};
+    extra.forEach(e => { map[e.id] = e; });
+    jobs = jobs.map(j => Object.assign({}, j, map[j.id] || {}));
+  }
   renderJobs();
+  if (document.getElementById('week-view').style.display === 'block') renderWeek();
 }
-
 function daysSince(d) {
   return Math.floor((Date.now() - new Date(d)) / 86400000);
 }
-
+function escAttr(s) {
+  return (s == null ? '' : String(s))
+    .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
 function pipClass(i, stage) {
   if (stage === 6) return i <= 6 ? 'comp' : '';
   if (stage === 5) return i < 5 ? 'done' : i === 5 ? 'inv' : '';
@@ -372,18 +412,15 @@ function pipClass(i, stage) {
   if (i === stage) return 'active';
   return '';
 }
-
 function tileClass(j) {
   if (j.stage >= 7) return 'stage-comp';
   if (j.stage >= 5) return 'stage-inv';
   if (j.stage >= 3) return 'stage-auth';
   return 'stage-0';
 }
-
 function renderJobs() {
   const q = (document.getElementById('search-input').value || '').toLowerCase();
   const sf = document.getElementById('stage-filter').value;
-
   const filtered = jobs.filter(j => {
     const mq = !q || (j.name||'').toLowerCase().includes(q) || (j.reg||'').toLowerCase().includes(q) || (j.vehicle||'').toLowerCase().includes(q);
     const ms = sf === '' || j.stage === parseInt(sf);
@@ -394,14 +431,12 @@ function renderJobs() {
              : j.stage < 5;
     return mq && ms && mf;
   });
-
   const el = document.getElementById('job-list');
   if (!filtered.length) {
     el.innerHTML = '<div class="empty-state">No jobs match your search</div>';
     renderStats();
     return;
   }
-
   el.innerHTML = filtered.map(j => {
     const days = daysSince(j.added_date);
     const dClass = days <= 7 ? 'days-ok' : days <= 14 ? 'days-warn' : 'days-over';
@@ -421,7 +456,6 @@ function renderJobs() {
     if (j.stage >= 5) tags.push(`<span class="tag tag-inv">Invoiced</span>`);
     const opts = STAGES.map((s, i) => `<option value="${i}" ${j.stage===i?'selected':''}>${s.label}</option>`).join('');
     const trackerUrl = `${SITE_URL}/track/${(j.reg||'').replace(/\s/g,'')}`;
-
     return `
     <div class="job-card${j.stage === 0 ? ' stage-new' : (j.stage >= 1 && j.stage <= 2) ? ' stage-progress' : j.stage === 5 ? ' stage-invoiced' : ''}">
       <div class="job-header">
@@ -446,6 +480,11 @@ function renderJobs() {
           ${j.laird_ref ? ' · LAIRD ' + j.laird_ref : ''}
         </span>
         <select class="stage-select" onchange="updateStage('${j.id}', this.value)">${opts}</select>
+        <select class="week-select" onchange="setWeek('${j.id}', this.value)" title="Schedule this job for a repair week">
+          <option value="" ${!j.repair_week?'selected':''}>⏱ Unscheduled</option>
+          <option value="this" ${j.repair_week==='this'?'selected':''}>📅 This week</option>
+          <option value="next" ${j.repair_week==='next'?'selected':''}>📆 Next week</option>
+        </select>
         <a href="${trackerUrl}" target="_blank" class="btn-link" title="Customer tracker link">🔗</a>
         <button class="btn-icon" onclick="copyLink('${trackerUrl}')" title="Copy tracker link">📋</button>
         <button class="btn-icon" onclick="removeJob('${j.id}', '${(j.name||'').replace(/'/g,"\\'")}', '${j.reg||''}')" title="Remove job" style="color:var(--red)">✕</button>
@@ -461,10 +500,8 @@ function renderJobs() {
       </div>` : ''}
     </div>`;
   }).join('');
-
   renderStats();
 }
-
 function openDetail(id) {
   const j = jobs.find(x => x.id === id);
   if (!j) return;
@@ -472,7 +509,6 @@ function openDetail(id) {
   const pct = Math.round((j.stage / 13) * 100);
   const opts = STAGES.map((s, i) => `<option value="${i}" ${j.stage===i?'selected':''}>${s.label}</option>`).join('');
   const trackerUrl = `${SITE_URL}/track/${(j.reg||'').replace(/\s/g,'')}`;
-
   const stageItems = STAGES.map((s, i) => {
     const done = i < j.stage;
     const active = i === j.stage;
@@ -485,7 +521,6 @@ function openDetail(id) {
       <span class="detail-stage-text ${textClass}">${s.label}${active ? '<span class="in-prog">In progress</span>' : ''}</span>
     </div>`;
   }).join('');
-
   document.getElementById('detail-content').innerHTML = `
     <div class="detail-header">
       <div class="detail-reg">${j.reg || '—'}</div>
@@ -508,21 +543,17 @@ function openDetail(id) {
       <button class="detail-close" onclick="copyLink('${trackerUrl}')">📋 Tracker</button>
       <button class="detail-del" onclick="removeJob('${j.id}', '${(j.name||'').replace(/'/g,"\\'")}', '${j.reg||''}')">Remove</button>
     </div>`;
-
   document.getElementById('detail-modal').classList.add('open');
 }
-
 function closeDetail(e) {
   if (e.target === document.getElementById('detail-modal')) {
     document.getElementById('detail-modal').classList.remove('open');
   }
 }
-
 async function updateStageFromDetail(id, stage) {
   await updateStage(id, stage);
   openDetail(id);
 }
-
 function renderStats() {
   const inProg = jobs.filter(j => j.stage < 5).length;
   const inv = jobs.filter(j => j.stage === 5).length;
@@ -534,7 +565,6 @@ function renderStats() {
     <div class="stat-card gray"><div class="stat-val">${jobs.length}</div><div class="stat-lbl">Total jobs</div></div>
   `;
 }
-
 async function updateStage(id, stage) {
   const { error } = await db.from('jobs').update({ stage: parseInt(stage), updated_at: new Date().toISOString() }).eq('id', id);
   if (error) { alert('Error updating stage: ' + error.message); return; }
@@ -545,7 +575,6 @@ async function updateStage(id, stage) {
   }
   renderJobs();
 }
-
 async function removeJob(id, name, reg) {
   if (!confirm(`Remove ${name} (${reg}) from dashboard?\n\nThis should only be done when remittance has been received from ACG.`)) return;
   const { error } = await db.from('jobs').delete().eq('id', id);
@@ -553,8 +582,8 @@ async function removeJob(id, name, reg) {
   jobs = jobs.filter(x => x.id !== id);
   addLog(`${reg} — ${name} removed from dashboard`, false);
   renderJobs();
+  if (document.getElementById('week-view').style.display === 'block') renderWeek();
 }
-
 async function addJob() {
   const name = document.getElementById('f-name').value.trim();
   const reg = document.getElementById('f-reg').value.trim().toUpperCase();
@@ -571,7 +600,6 @@ async function addJob() {
   ['f-name','f-reg','f-vehicle','f-addr','f-inv','f-ref'].forEach(id => document.getElementById(id).value = '');
   await refreshJobs();
 }
-
 function toggleDamage(id) {
   const body = document.getElementById('damage-body-' + id);
   const arrow = document.getElementById('damage-arrow-' + id);
@@ -583,7 +611,6 @@ function toggleDamage(id) {
     arrow.textContent = '▲';
   }
 }
-
 async function saveNotes(id, el) {
   const notes = el.value;
   const { error } = await db.from('jobs').update({ notes, updated_at: new Date().toISOString() }).eq('id', id);
@@ -594,7 +621,6 @@ async function saveNotes(id, el) {
     if (saved) { saved.style.display = 'block'; setTimeout(() => saved.style.display = 'none', 2000); }
   }
 }
-
 function copyLink(url) {
   navigator.clipboard.writeText(url).then(() => {
     const btn = event.target;
@@ -602,14 +628,12 @@ function copyLink(url) {
     setTimeout(() => btn.textContent = '📋', 1500);
   });
 }
-
 function setFilter(f, btn) {
   currentFilter = f;
-  document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('#admin-view .tab-btn').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
   renderJobs();
 }
-
 function addLog(msg, auto = false) {
   const now = new Date();
   const t = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
@@ -622,7 +646,6 @@ function addLog(msg, auto = false) {
       <span style="color:var(--muted);${l.auto?'color:#185FA5;font-weight:500':''}">${l.msg}</span>
     </div>`).join('');
 }
-
 function populateStageSelects() {
   const opts = STAGES.map((s, i) => `<option value="${i}">${s.label}</option>`).join('');
   const sf = document.getElementById('stage-filter');
@@ -630,24 +653,129 @@ function populateStageSelects() {
   const fs = document.getElementById('f-stage');
   if (fs) fs.innerHTML = opts;
 }
-
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.modal-overlay').forEach(m => {
   m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
 });
-
+// ─── REPAIR SCHEDULE ──────────────────────────────────────
+function showWeek(which) {
+  if (which) weekTab = which;
+  if ((window.location.hash || '').replace('#', '').indexOf('week') !== 0) window.location.hash = 'week';
+  document.getElementById('loading-view').style.display = 'none';
+  document.getElementById('admin-view').style.display = 'none';
+  document.getElementById('tracker-view').style.display = 'none';
+  document.getElementById('week-view').style.display = 'block';
+  renderWeek();
+}
+function showDash() {
+  if (window.location.hash) history.replaceState(null, '', window.location.pathname);
+  document.getElementById('week-view').style.display = 'none';
+  document.getElementById('admin-view').style.display = 'block';
+  renderJobs();
+}
+function setWeekTab(w) {
+  weekTab = w;
+  renderWeek();
+}
+// Schedule a job into a repair week (or clear it) from the dashboard
+async function setWeek(id, val) {
+  const { error } = await db.from('jobs').update({ repair_week: val || null, updated_at: new Date().toISOString() }).eq('id', id);
+  if (error) { alert('Error scheduling job: ' + error.message); return; }
+  const j = jobs.find(x => x.id === id);
+  if (j) {
+    j.repair_week = val || null;
+    const where = val === 'this' ? 'this week' : val === 'next' ? 'next week' : 'unscheduled';
+    addLog(`${j.reg} — ${j.name} scheduled: ${where}`, false);
+  }
+  if (document.getElementById('week-view').style.display === 'block') renderWeek();
+}
+// Save a yes/no tick-box answer
+async function setFlag(id, field, value) {
+  const upd = { updated_at: new Date().toISOString() };
+  upd[field] = value;
+  const { error } = await db.from('jobs').update(upd).eq('id', id);
+  if (error) { alert('Error saving: ' + error.message); return; }
+  const j = jobs.find(x => x.id === id);
+  if (j) j[field] = value;
+  renderWeek();
+}
+// Save a free-text answer (e.g. which part is on back order)
+async function setText(id, field, value) {
+  const upd = { updated_at: new Date().toISOString() };
+  upd[field] = value;
+  const { error } = await db.from('jobs').update(upd).eq('id', id);
+  if (error) { alert('Error saving: ' + error.message); return; }
+  const j = jobs.find(x => x.id === id);
+  if (j) j[field] = value;
+}
+function weekCard(j) {
+  const days = daysSince(j.added_date);
+  const dClass = days <= 7 ? 'days-ok' : days <= 14 ? 'days-warn' : 'days-over';
+  const pips = STAGES.map((_, i) => `<div class="pip ${pipClass(i, j.stage)}"></div>`).join('');
+  const ready = j.parts_ordered && j.parts_on_site && j.is_estimated && !j.parts_on_backorder && (!j.needs_supplementary || j.supplementary_sent);
+  return `
+  <div class="week-card">
+    <div class="job-header">
+      <span class="reg-plate">${j.reg || '—'}</span>
+      <div class="job-info">
+        <div class="job-name">${j.name || '—'} ${ready ? '<span class="ready-badge">✓ Ready to start</span>' : ''}</div>
+        <div class="job-vehicle">${j.vehicle || '—'}</div>
+        <div class="job-addr">${j.mobile ? '📱 ' + j.mobile : ''} ${j.address ? '· ' + j.address : ''}</div>
+      </div>
+      <span class="days-pill ${dClass}">${days}d</span>
+    </div>
+    <div class="progress-track">${pips}</div>
+    <div class="progress-label">
+      <span><strong>${STAGES[j.stage]?.label || '—'}</strong></span>
+      <span style="font-family:'DM Mono',monospace">${j.invoice_number ? 'INV ' + j.invoice_number + ' · ' : ''}REF ${j.acg_ref || '—'}${j.laird_ref ? ' · LAIRD ' + j.laird_ref : ''}</span>
+    </div>
+    <div class="check-section-title">Parts</div>
+    <div class="check-grid">
+      <label class="chk ${j.parts_ordered?'on':''}"><input type="checkbox" ${j.parts_ordered?'checked':''} onchange="setFlag('${j.id}','parts_ordered',this.checked)"> All parts ordered</label>
+      <label class="chk ${j.parts_on_site?'on':''}"><input type="checkbox" ${j.parts_on_site?'checked':''} onchange="setFlag('${j.id}','parts_on_site',this.checked)"> Parts on site</label>
+      <label class="chk ${j.is_estimated?'on':''}"><input type="checkbox" ${j.is_estimated?'checked':''} onchange="setFlag('${j.id}','is_estimated',this.checked)"> Estimated</label>
+      <label class="chk ${j.parts_on_backorder?'on':''}"><input type="checkbox" ${j.parts_on_backorder?'checked':''} onchange="setFlag('${j.id}','parts_on_backorder',this.checked)"> Parts on back order</label>
+    </div>
+    ${j.parts_on_backorder ? `<input class="sub-text" placeholder="Which part(s) are on back order?" value="${escAttr(j.backorder_part)}" onchange="setText('${j.id}','backorder_part',this.value)">` : ''}
+    <div class="check-section-title">Supplementary</div>
+    <div class="check-grid">
+      <label class="chk ${j.needs_supplementary?'on':''}"><input type="checkbox" ${j.needs_supplementary?'checked':''} onchange="setFlag('${j.id}','needs_supplementary',this.checked)"> Needs a supplementary</label>
+      ${j.needs_supplementary ? `<label class="chk sub-chk ${j.supplementary_sent?'on':''}"><input type="checkbox" ${j.supplementary_sent?'checked':''} onchange="setFlag('${j.id}','supplementary_sent',this.checked)"> Supplementary sent</label>` : ''}
+    </div>
+    <textarea class="notes-area" placeholder="Add notes…" onblur="saveNotes('${j.id}', this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.blur()}">${j.notes || ''}</textarea>
+    <div class="job-footer" style="margin-top:8px">
+      <span class="job-refs">Scheduled: ${j.repair_week === 'this' ? '📅 This week' : '📆 Next week'}</span>
+      <select class="week-select" onchange="setWeek('${j.id}', this.value)" title="Move or remove from schedule">
+        <option value="" ${!j.repair_week?'selected':''}>⏱ Unschedule</option>
+        <option value="this" ${j.repair_week==='this'?'selected':''}>📅 This week</option>
+        <option value="next" ${j.repair_week==='next'?'selected':''}>📆 Next week</option>
+      </select>
+    </div>
+  </div>`;
+}
+function renderWeek() {
+  document.getElementById('wt-this').classList.toggle('active', weekTab === 'this');
+  document.getElementById('wt-next').classList.toggle('active', weekTab === 'next');
+  const list = jobs.filter(j => j.repair_week === weekTab);
+  const intro = document.getElementById('week-intro');
+  const el = document.getElementById('week-list');
+  if (!list.length) {
+    if (intro) intro.textContent = '';
+    el.innerHTML = `<div class="week-empty">No jobs scheduled for <strong>${weekTab === 'this' ? 'this week' : 'next week'}</strong> yet.<br><span style="font-size:12px;color:var(--faint)">On the dashboard, use the “This week / Next week” dropdown on a job card to add one here.</span></div>`;
+    return;
+  }
+  const readyCount = list.filter(j => j.parts_ordered && j.parts_on_site && j.is_estimated && !j.parts_on_backorder && (!j.needs_supplementary || j.supplementary_sent)).length;
+  if (intro) intro.innerHTML = `<strong>${list.length}</strong> job${list.length === 1 ? '' : 's'} scheduled · <strong>${readyCount}</strong> ready to start`;
+  el.innerHTML = list.map(weekCard).join('');
+}
 // ─── CUSTOMER TRACKER ─────────────────────────────────────
 async function showTracker(reg) {
   document.getElementById('loading-view').style.display = 'none';
   document.getElementById('tracker-view').style.display = 'block';
-
   const regSearch = reg.replace(/\s/g, '').toUpperCase();
-
   const { data, error } = await db.from('jobs').select('name,reg,vehicle,stage').ilike('reg', `%${regSearch}%`).limit(1);
-
   const el = document.getElementById('tracker-content');
-
   if (error || !data || data.length === 0) {
     el.innerHTML = `
       <div class="tracker-not-found">
@@ -657,11 +785,9 @@ async function showTracker(reg) {
       </div>`;
     return;
   }
-
   const job = data[0];
   const stage = job.stage || 0;
   const isComplete = stage === 6;
-
   const stageItems = STAGES.map((s, i) => {
     const done = i < stage;
     const active = i === stage;
@@ -681,7 +807,6 @@ async function showTracker(reg) {
         </div>
       </div>`;
   }).join('');
-
   el.innerHTML = `
     <div class="tracker-header">
       <div class="tracker-header-logo">TRT Motors</div>
