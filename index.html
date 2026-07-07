@@ -68,6 +68,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .job-card.stage-invoiced { background: #E6F1FB; border-color: #90BEE8; }
 .job-card.stage-invoiced:hover { border-color: #1a1aff; }
 .job-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+.job-header.clickable { cursor: pointer; }
 .reg-plate { background: var(--gold); color: #1a1a1a; font-family: 'DM Mono', monospace; font-weight: 500; font-size: 13px; padding: 4px 12px; border-radius: 6px; letter-spacing: 2px; white-space: nowrap; border: 2px solid rgba(0,0,0,0.1); }
 .job-info { flex: 1; min-width: 0; }
 .job-name { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
@@ -97,27 +98,12 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .damage-toggle.has-damage { background: #FFF8E6; border-color: #F0C040; color: #7A5200; }
 .damage-body { display: none; background: #FFF8E6; border: 1px solid #F0C040; border-radius: 6px; padding: 10px 12px; margin-top: 4px; font-size: 12px; color: #5a3e00; line-height: 1.5; }
 .damage-body.open { display: block; }
-.job-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; margin-bottom: 20px; }
-.job-tile { background: var(--card); border: 2px solid var(--border); border-radius: var(--radius); padding: 14px 10px 12px; cursor: pointer; transition: all 0.15s; display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative; }
-.job-tile:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-color: var(--blue); }
-.job-tile.stage-0 { background: #E8F8EE; border-color: #A8DDB8; }
-.job-tile.stage-auth { background: #E6F1FB; border-color: #90BEE8; }
-.job-tile.stage-inv { background: var(--green-light); border-color: #5CB87A; }
-.job-tile.stage-comp { background: #f0f0f0; border-color: #aaa; }
-.tile-reg { font-family: 'DM Mono', monospace; font-weight: 500; font-size: 13px; letter-spacing: 1.5px; background: var(--gold); color: #1a1a1a; padding: 4px 8px; border-radius: 5px; border: 1.5px solid rgba(0,0,0,0.1); text-align: center; width: 100%; }
-.tile-name { font-size: 11px; color: var(--muted); text-align: center; line-height: 1.3; }
-.tile-stage { font-size: 10px; font-weight: 600; text-align: center; color: var(--blue); }
-.tile-days { position: absolute; top: 6px; right: 6px; font-size: 9px; padding: 1px 5px; border-radius: 10px; }
-.tile-prog { width: 100%; height: 3px; background: #e0dedd; border-radius: 2px; overflow: hidden; }
-.tile-prog-fill { height: 100%; border-radius: 2px; background: var(--blue); transition: width 0.3s; }
-.tile-prog-fill.auth { background: #1D9E75; }
-.tile-prog-fill.comp { background: #888; }
 /* JOB DETAIL MODAL */
 .detail-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: flex-end; justify-content: center; padding: 0; }
 .detail-overlay.open { display: flex; }
-.detail-sheet { background: var(--card); border-radius: 20px 20px 0 0; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; padding: 20px 20px 32px; }
+.detail-sheet { background: var(--card); border-radius: 20px 20px 0 0; width: 100%; max-width: 640px; max-height: 92vh; overflow-y: auto; padding: 20px 20px 32px; }
 .detail-handle { width: 40px; height: 4px; background: var(--border-strong); border-radius: 2px; margin: 0 auto 16px; }
-.detail-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+.detail-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
 .detail-reg { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 500; background: var(--gold); color: #1a1a1a; padding: 6px 14px; border-radius: 8px; border: 2px solid rgba(0,0,0,0.1); letter-spacing: 2px; }
 .detail-info { flex: 1; }
 .detail-name { font-size: 16px; font-weight: 600; }
@@ -125,13 +111,18 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .detail-addr { font-size: 12px; color: var(--faint); margin-top: 2px; }
 .detail-stage-label { font-size: 13px; font-weight: 600; color: var(--blue); margin-bottom: 4px; }
 .detail-pct { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
-.detail-progress { display: flex; gap: 2px; height: 5px; border-radius: 3px; margin-bottom: 16px; }
+.detail-progress { display: flex; gap: 2px; height: 5px; border-radius: 3px; margin-bottom: 12px; }
 .detail-pip { flex: 1; height: 5px; border-radius: 3px; background: #e0dedd; }
 .detail-pip.done { background: var(--green); }
 .detail-pip.active { background: var(--blue); }
 .detail-pip.inv { background: #639922; }
 .detail-pip.comp { background: #888; }
-.detail-stages { margin-bottom: 16px; }
+.kv-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.chip { font-size: 11px; padding: 3px 10px; border-radius: 20px; background: var(--bg); border: 1px solid var(--border); color: var(--muted); }
+.chip strong { color: var(--text); }
+.dtabs { display: flex; gap: 4px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 4px; margin-bottom: 14px; overflow-x: auto; }
+.dtab { padding: 6px 12px; border-radius: 6px; border: none; background: transparent; font-size: 12px; font-family: inherit; color: var(--muted); cursor: pointer; white-space: nowrap; flex: 1; }
+.dtab.active { background: var(--blue); color: #fff; font-weight: 500; }
 .detail-stage-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
 .detail-stage-item:last-child { border-bottom: none; }
 .detail-dot { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--border-strong); display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }
@@ -140,30 +131,54 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .detail-stage-text { font-size: 13px; flex: 1; }
 .detail-stage-text.pending { color: var(--faint); }
 .detail-stage-text.active { font-weight: 600; color: var(--blue); }
+.stage-date { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; white-space: nowrap; }
 .in-prog { font-size: 10px; background: #E6F1FB; color: var(--blue); padding: 1px 6px; border-radius: 10px; font-weight: 600; margin-left: 6px; }
 .detail-refs { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; background: var(--bg); border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; }
-.detail-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.detail-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
 .detail-select { flex: 1; font-size: 13px; padding: 8px 10px; border: 1px solid var(--border-strong); border-radius: 8px; font-family: inherit; background: var(--card); }
 .detail-close { background: none; border: 1px solid var(--border-strong); border-radius: 8px; padding: 8px 14px; font-size: 13px; font-family: inherit; cursor: pointer; color: var(--muted); }
 .detail-del { background: none; border: 1px solid var(--red); border-radius: 8px; padding: 8px 14px; font-size: 13px; font-family: inherit; cursor: pointer; color: var(--red); }
+.section-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--faint); margin: 14px 0 6px; }
+.note-item { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; font-size: 13px; display: flex; gap: 10px; align-items: flex-start; }
+.note-body { flex: 1; white-space: pre-wrap; line-height: 1.45; }
+.note-time { font-size: 10px; color: var(--faint); font-family: 'DM Mono', monospace; margin-top: 3px; }
+.note-del { background: none; border: none; color: var(--faint); cursor: pointer; font-size: 13px; padding: 2px; }
+.note-del:hover { color: var(--red); }
+.add-note-row { display: flex; gap: 8px; margin-bottom: 12px; align-items: flex-end; }
+.add-note-row textarea { flex: 1; font-size: 13px; font-family: inherit; padding: 8px 10px; border: 1px solid var(--border-strong); border-radius: 8px; resize: vertical; min-height: 44px; background: var(--card); }
+.add-note-row textarea:focus { outline: none; border-color: var(--blue); }
+.part-row { display: flex; gap: 8px; align-items: center; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; margin-bottom: 6px; font-size: 13px; flex-wrap: wrap; }
+.part-desc { flex: 1; min-width: 120px; }
+.part-cost { font-family: 'DM Mono', monospace; font-size: 12px; white-space: nowrap; }
+.part-dates { font-size: 10px; color: var(--faint); font-family: 'DM Mono', monospace; width: 100%; }
+.part-status { font-size: 11px; padding: 4px 6px; border: 1px solid var(--border-strong); border-radius: 6px; font-family: inherit; background: var(--card); cursor: pointer; }
+.add-part-row { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.add-part-row input { font-size: 13px; font-family: inherit; padding: 8px 10px; border: 1px solid var(--border-strong); border-radius: 8px; background: var(--card); }
+.add-part-row input:focus { outline: none; border-color: var(--blue); }
+.parts-total { text-align: right; font-size: 13px; font-weight: 600; margin-top: 8px; }
+.photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; margin-top: 10px; }
+.photo-thumb { position: relative; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-strong); aspect-ratio: 4/3; background: var(--bg); }
+.photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.photo-del { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.55); color: #fff; border: none; border-radius: 6px; width: 22px; height: 22px; cursor: pointer; font-size: 12px; line-height: 1; }
+.photo-del:hover { background: var(--red); }
+.upload-btn { display: inline-flex; align-items: center; gap: 6px; }
+.hint-box { background: var(--amber-light); border: 1px solid #E8C48A; color: var(--amber); border-radius: 8px; padding: 10px 12px; font-size: 12px; line-height: 1.5; }
+.dmg-edit { width: 100%; font-size: 13px; font-family: inherit; padding: 10px 12px; border: 1px solid #F0C040; background: #FFF8E6; color: #5a3e00; border-radius: 8px; resize: vertical; min-height: 110px; line-height: 1.5; }
+.dmg-edit:focus { outline: none; border-color: var(--amber); }
 .tag { font-size: 10px; padding: 2px 7px; border-radius: 20px; font-weight: 600; }
 .tag-auth { background: #E6F1FB; color: #0C447C; }
 .tag-inv { background: var(--green-light); color: #0F6E56; }
 .tag-no-auth { background: var(--amber-light); color: var(--amber); }
 .tag-supp { background: #F0E6FB; color: #5B2D87; }
+.tag-week { background: #EDEBFF; color: #3B2DA3; }
 .days-pill { font-size: 11px; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
 .days-ok { background: var(--green-light); color: #0F6E56; }
 .days-warn { background: var(--amber-light); color: var(--amber); }
 .days-over { background: var(--red-light); color: var(--red); }
-.notes-wrap { margin-top: 8px; }
-.notes-textarea { width: 100%; font-size: 12px; font-family: inherit; padding: 7px 10px; border: 1px solid var(--border-strong); border-radius: 6px; background: var(--bg); color: var(--text); resize: none; min-height: 54px; line-height: 1.4; }
-.notes-textarea:focus { outline: none; border-color: var(--blue); background: var(--card); }
-.notes-save { margin-top: 4px; font-size: 11px; padding: 3px 10px; border-radius: 5px; border: 1px solid var(--border-strong); background: var(--card); cursor: pointer; color: var(--muted); }
-.notes-save:hover { background: var(--blue); color: #fff; border-color: var(--blue); }
 .log-section { margin-top: 24px; }
 .log-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--faint); margin-bottom: 8px; }
-.log-box { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; max-height: 200px; overflow-y: auto; }
-.log-entry { display: flex; gap: 12px; padding: 8px 14px; border-bottom: 1px solid var(--border); font-size: 12px; }
+.log-box { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; max-height: 260px; overflow-y: auto; }
+.log-entry { display: flex; gap: 12px; padding: 8px 14px; border-bottom: 1px solid var(--border); font-size: 12px; align-items: baseline; }
 .log-entry:last-child { border-bottom: none; }
 .log-time { color: var(--faint); font-family: 'DM Mono', monospace; font-size: 11px; white-space: nowrap; }
 .log-auto { background: #E6F1FB; color: var(--blue); font-size: 10px; padding: 1px 6px; border-radius: 4px; font-weight: 600; white-space: nowrap; }
@@ -179,6 +194,9 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .loading { text-align: center; padding: 3rem; color: var(--muted); font-size: 14px; }
 /* WEEK / REPAIR SCHEDULE */
 #week-view { display: none; }
+.week-nav { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+.week-nav-label { flex: 1; text-align: center; font-size: 15px; font-weight: 600; min-width: 180px; }
+.week-nav-label .wk-badge { font-size: 11px; font-weight: 600; background: #EDEBFF; color: #3B2DA3; border-radius: 20px; padding: 2px 10px; margin-left: 8px; vertical-align: middle; }
 .week-intro { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
 .week-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 12px; }
 .week-card:hover { border-color: var(--border-strong); }
@@ -194,7 +212,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .sub-text { width: 100%; margin-top: 8px; padding: 8px 12px; border: 1px solid #F0C040; background: #FFF8E6; border-radius: var(--radius-sm); font-size: 13px; font-family: inherit; color: #5a3e00; }
 .sub-text::placeholder { color: #b08a3c; }
 .sub-text:focus { outline: none; border-color: var(--amber); }
-.week-select { font-size: 12px; padding: 5px 8px; border: 1px solid var(--border-strong); border-radius: 6px; font-family: inherit; background: var(--card); cursor: pointer; }
+.week-select { font-size: 12px; padding: 5px 8px; border: 1px solid var(--border-strong); border-radius: 6px; font-family: inherit; background: var(--card); cursor: pointer; max-width: 200px; }
 .week-empty { text-align: center; padding: 3rem 1rem; color: var(--muted); font-size: 14px; line-height: 1.7; }
 /* CUSTOMER TRACKER */
 #tracker-view { display: none; }
@@ -245,7 +263,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
     </div>
     <div style="display:flex;gap:8px;align-items:center">
       <span style="color:rgba(255,255,255,0.7);font-size:11px"><span class="live-dot"></span>Live</span>
-      <button class="btn-header" onclick="showWeek('this')">📅 Repair schedule</button>
+      <button class="btn-header" onclick="showWeek()">📅 Repair schedule</button>
       <button class="btn-header" onclick="openModal('add-modal')">+ Add job</button>
       <a class="btn-header" href="https://web-production-eb7dd.up.railway.app/manual-invoice" target="_blank" rel="noopener" style="text-decoration:none">+ New invoice</a>
       <button class="btn-header" onclick="refreshJobs()">↻ Refresh</button>
@@ -270,6 +288,12 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
       </select>
     </div>
     <div id="job-list"></div>
+    <div class="log-section">
+      <div class="log-title">Activity log</div>
+      <div class="log-box" id="log-box"></div>
+    </div>
+  </div>
+</div>
 <!-- JOB DETAIL SHEET -->
 <div class="detail-overlay" id="detail-modal" onclick="closeDetail(event)">
   <div class="detail-sheet" id="detail-sheet">
@@ -277,14 +301,8 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
     <div id="detail-content"></div>
   </div>
 </div>
-    <div class="log-section">
-      <div class="log-title">Activity log</div>
-      <div class="log-box" id="log-box"></div>
-    </div>
-  </div>
-</div>
 <!-- ═══════════════════════════════════════════════ -->
-<!-- REPAIR SCHEDULE (THIS WEEK / NEXT WEEK)          -->
+<!-- REPAIR SCHEDULE (WEEK-BY-WEEK CALENDAR)          -->
 <!-- ═══════════════════════════════════════════════ -->
 <div id="week-view">
   <header class="header">
@@ -295,11 +313,16 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
     </div>
   </header>
   <div class="container">
-    <div class="tabs">
-      <button class="tab-btn active" id="wt-this" onclick="setWeekTab('this')">📅 This week</button>
-      <button class="tab-btn" id="wt-next" onclick="setWeekTab('next')">📆 Next week</button>
+    <div class="week-nav">
+      <button class="btn" onclick="navWeek(-1)">←</button>
+      <div class="week-nav-label" id="week-label"></div>
+      <button class="btn" onclick="navWeek(1)">→</button>
+      <button class="btn" onclick="goThisWeek()">Today</button>
     </div>
     <div class="week-intro" id="week-intro"></div>
+    <div class="toolbar">
+      <select class="filter-select" id="week-add-select" style="flex:1" onchange="addToWeek(this)"></select>
+    </div>
     <div id="week-list"></div>
   </div>
 </div>
@@ -341,6 +364,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 const SUPABASE_URL = 'https://kgohkilvxqjfadhyasyk.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_i2I2Rtl_1skzxqBGXxpjqA_icdg62u6';
 const SITE_URL = window.location.origin;
+const PHOTO_BUCKET = 'job-photos';
 // ─── STAGES ───────────────────────────────────────────────
 const STAGES = [
   { label: 'New instruction',        sub: 'Job instruction received from ACG' },
@@ -352,8 +376,6 @@ const STAGES = [
   { label: 'Invoiced',               sub: 'Invoice submitted to ACG' },
   { label: 'Complete',               sub: 'Repair finished — all done' },
 ];
-// Stage indices derived from labels, so the logic keeps working even if
-// stages are inserted or re-ordered (don't hard-code stage numbers below).
 const INVOICED_STAGE = STAGES.findIndex(s => s.label === 'Invoiced');
 const COMPLETE_STAGE = STAGES.findIndex(s => s.label === 'Complete');
 const LAST_STAGE = STAGES.length - 1;
@@ -361,9 +383,13 @@ const LAST_STAGE = STAGES.length - 1;
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let jobs = [];
-let logs = [];
+let events = [];               // persistent activity log (job_events table)
+let historyOk = true;          // false if migration hasn't been run yet
 let currentFilter = 'active';
-let weekTab = 'this';
+let schedWeek = mondayISO(new Date());   // week currently shown in the schedule
+let detailJobId = null;
+let detailTab = 'timeline';
+let detailNotes = [], detailParts = [], detailEvents = [], detailPhotos = [];
 const path = window.location.pathname;
 const trackMatch = path.match(/\/track\/([A-Z0-9]+)/i);
 if (trackMatch) {
@@ -373,12 +399,54 @@ if (trackMatch) {
     if ((window.location.hash || '').replace('#', '').indexOf('week') === 0) showWeek();
   });
 }
-// Keep browser back/forward in sync with the schedule view
 window.addEventListener('hashchange', () => {
   if (trackMatch) return;
   const h = (window.location.hash || '').replace('#', '');
   if (h.indexOf('week') === 0) showWeek(); else showDash();
 });
+// ─── DATE HELPERS ─────────────────────────────────────────
+function isoLocal(d) {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function todayISO() { return isoLocal(new Date()); }
+function mondayISO(d) {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  x.setDate(x.getDate() - ((x.getDay() + 6) % 7));
+  return isoLocal(x);
+}
+function addWeeksISO(iso, n) {
+  const d = new Date(iso + 'T00:00:00');
+  d.setDate(d.getDate() + 7 * n);
+  return isoLocal(d);
+}
+function fmtShortISO(iso) {
+  if (!iso) return '';
+  const d = new Date(String(iso).slice(0, 10) + 'T00:00:00');
+  if (isNaN(d)) return '';
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+}
+function fmtWeekISO(iso) {
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+}
+function fmtDT(ts) {
+  const d = new Date(ts);
+  const today = new Date();
+  const time = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  if (d.toDateString() === today.toDateString()) return time;
+  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) + ' ' + time;
+}
+function daysSince(d) {
+  return Math.floor((Date.now() - new Date(d)) / 86400000);
+}
+function escHtml(s) {
+  return (s == null ? '' : String(s))
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function escAttr(s) {
+  return escHtml(s).replace(/"/g, '&quot;');
+}
 // ─── ADMIN ────────────────────────────────────────────────
 async function showAdmin() {
   document.getElementById('loading-view').style.display = 'none';
@@ -388,28 +456,90 @@ async function showAdmin() {
   setInterval(refreshJobs, 30000);
 }
 async function refreshJobs() {
+  // remember previous state so we can auto-log changes made by the backend
+  const prev = {};
+  jobs.forEach(j => { prev[j.id] = { stage: j.stage, auth: !!j.auth_confirmed }; });
   const { data, error } = await db.from('jobs_with_supplementary').select('*').order('added_date', { ascending: false });
   if (error) { console.error(error); return; }
   jobs = data || [];
-  // Merge the schedule / parts-checklist fields straight from the base table,
+  // Merge schedule / checklist / history fields straight from the base table,
   // so they're always present even if the view doesn't expose them.
   const { data: extra, error: exErr } = await db.from('jobs')
-    .select('id,repair_week,parts_ordered,parts_on_site,parts_on_backorder,backorder_part,is_estimated,needs_supplementary,supplementary_sent');
+    .select('id,repair_week,repair_week_start,stage_dates,parts_ordered,parts_on_site,parts_on_backorder,backorder_part,is_estimated,needs_supplementary,supplementary_sent');
   if (!exErr && extra) {
     const map = {};
     extra.forEach(e => { map[e.id] = e; });
     jobs = jobs.map(j => Object.assign({}, j, map[j.id] || {}));
   }
+  // Auto-log any changes made elsewhere (backend, another device)
+  jobs.forEach(j => {
+    const p = prev[j.id];
+    if (!p) return;
+    if (p.stage !== j.stage) {
+      logEvent(j, 'stage', 'Moved to "' + (STAGES[j.stage] ? STAGES[j.stage].label : j.stage) + '"', true);
+      recordStageDate(j, j.stage);
+    }
+    if (!p.auth && j.auth_confirmed) logEvent(j, 'auth', 'Repair authorised', true);
+  });
   renderJobs();
   if (document.getElementById('week-view').style.display === 'block') renderWeek();
+  if (detailJobId && document.getElementById('detail-modal').classList.contains('open')) renderDetail();
+  loadEvents();
 }
-function daysSince(d) {
-  return Math.floor((Date.now() - new Date(d)) / 86400000);
+async function loadEvents() {
+  const { data, error } = await db.from('job_events').select('*').order('created_at', { ascending: false }).limit(40);
+  if (error) { historyOk = false; renderLog(); return; }
+  historyOk = true;
+  events = data || [];
+  renderLog();
 }
-function escAttr(s) {
-  return (s == null ? '' : String(s))
-    .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
-    .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+// Persist an event to the history table (and show it instantly)
+async function logEvent(j, type, message, auto) {
+  const row = {
+    job_id: j && j.id ? j.id : null,
+    reg: j ? (j.reg || null) : null,
+    name: j ? (j.name || null) : null,
+    event_type: type,
+    message: message,
+    auto: !!auto,
+    created_at: new Date().toISOString()
+  };
+  events.unshift(row);
+  renderLog();
+  if (detailJobId && j && j.id === detailJobId) { detailEvents.unshift(row); }
+  const { error } = await db.from('job_events').insert([{
+    job_id: row.job_id, reg: row.reg, name: row.name,
+    event_type: row.event_type, message: row.message, auto: row.auto
+  }]);
+  if (error) console.error('logEvent:', error.message);
+}
+// Record the date a stage was first reached (stored on the job as jsonb)
+async function recordStageDate(j, stage) {
+  const sd = Object.assign({}, j.stage_dates || {});
+  if (sd[stage] != null) return;
+  sd[stage] = todayISO();
+  j.stage_dates = sd;
+  await db.from('jobs').update({ stage_dates: sd }).eq('id', j.id);
+}
+function renderLog() {
+  const el = document.getElementById('log-box');
+  if (!el) return;
+  if (!historyOk) {
+    el.innerHTML = '<div class="log-entry"><span style="color:var(--muted)">History not set up yet — run <strong>supabase-migration.sql</strong> in the Supabase SQL editor to enable permanent date logging.</span></div>';
+    return;
+  }
+  if (!events.length) {
+    el.innerHTML = '<div class="log-entry"><span style="color:var(--muted)">No activity yet.</span></div>';
+    return;
+  }
+  el.innerHTML = events.slice(0, 40).map(e => {
+    const who = e.reg ? '<strong>' + escHtml(e.reg) + '</strong>' + (e.name ? ' — ' + escHtml(e.name) : '') + ': ' : '';
+    return '<div class="log-entry">' +
+      '<span class="log-time">' + fmtDT(e.created_at) + '</span>' +
+      (e.auto ? '<span class="log-auto">AUTO</span>' : '') +
+      '<span style="color:var(--muted)">' + who + escHtml(e.message) + '</span>' +
+    '</div>';
+  }).join('');
 }
 function pipClass(i, stage) {
   if (stage === COMPLETE_STAGE) return i <= COMPLETE_STAGE ? 'comp' : '';
@@ -418,12 +548,47 @@ function pipClass(i, stage) {
   if (i === stage) return 'active';
   return '';
 }
-function tileClass(j) {
-  if (j.stage >= COMPLETE_STAGE) return 'stage-comp';
-  if (j.stage >= INVOICED_STAGE) return 'stage-inv';
-  if (j.stage >= 3) return 'stage-auth';
-  return 'stage-0';
+// ─── WEEK SCHEDULING HELPERS ─────────────────────────────
+function weekOptionsFor(j) {
+  const opts = [];
+  const start = mondayISO(new Date());
+  for (let i = 0; i < 8; i++) opts.push(addWeeksISO(start, i));
+  if (j && j.repair_week_start && opts.indexOf(j.repair_week_start) === -1) {
+    opts.unshift(j.repair_week_start);   // keep past/far-out weeks visible
+  }
+  return opts;
 }
+function weekLabel(w) {
+  const t = mondayISO(new Date()), n = addWeeksISO(t, 1);
+  const d = fmtWeekISO(w);
+  if (w === t) return '📅 This week (' + d + ')';
+  if (w === n) return '📆 Next week (' + d + ')';
+  return '🗓 Wk of ' + d;
+}
+function weekSelectHTML(j) {
+  const opts = weekOptionsFor(j).map(w =>
+    '<option value="' + w + '"' + (j.repair_week_start === w ? ' selected' : '') + '>' + weekLabel(w) + '</option>'
+  ).join('');
+  return '<select class="week-select" onchange="setWeek(\'' + j.id + '\', this.value)" title="Allocate this job to a repair week">' +
+    '<option value=""' + (!j.repair_week_start ? ' selected' : '') + '>⏱ Unscheduled</option>' + opts + '</select>';
+}
+async function setWeek(id, val) {
+  const t = mondayISO(new Date()), n = addWeeksISO(t, 1);
+  const legacy = val === t ? 'this' : val === n ? 'next' : null;   // keep old column in sync
+  const { error } = await db.from('jobs').update({
+    repair_week_start: val || null, repair_week: legacy, updated_at: new Date().toISOString()
+  }).eq('id', id);
+  if (error) { alert('Error scheduling job: ' + error.message); return; }
+  const j = jobs.find(x => x.id === id);
+  if (j) {
+    j.repair_week_start = val || null;
+    j.repair_week = legacy;
+    logEvent(j, 'schedule', val ? 'Scheduled for week commencing ' + fmtWeekISO(val) : 'Removed from repair schedule', false);
+  }
+  renderJobs();
+  if (document.getElementById('week-view').style.display === 'block') renderWeek();
+}
+// ─── JOB LIST ─────────────────────────────────────────────
 function renderJobs() {
   const q = (document.getElementById('search-input').value || '').toLowerCase();
   const sf = document.getElementById('stage-filter').value;
@@ -439,7 +604,7 @@ function renderJobs() {
   });
   const el = document.getElementById('job-list');
   if (!filtered.length) {
-    el.innerHTML = '<div class="empty-state">No jobs match your search</div>';
+    el.innerHTML = '<div class="week-empty">No jobs match your search</div>';
     renderStats();
     return;
   }
@@ -460,17 +625,18 @@ function renderJobs() {
       tags.push(`<span class="tag tag-supp">${suppLabel}</span>`);
     }
     if (j.stage >= INVOICED_STAGE) tags.push(`<span class="tag tag-inv">Invoiced</span>`);
+    if (j.repair_week_start) tags.push(`<span class="tag tag-week">🗓 Wk ${fmtShortISO(j.repair_week_start)}</span>`);
     const opts = STAGES.map((s, i) => `<option value="${i}" ${j.stage===i?'selected':''}>${s.label}</option>`).join('');
     const trackerUrl = `${SITE_URL}/track/${(j.reg||'').replace(/\s/g,'')}`;
     return `
     <div class="job-card${j.stage === 0 ? ' stage-new' : (j.stage >= 1 && j.stage <= 2) ? ' stage-progress' : j.stage === INVOICED_STAGE ? ' stage-invoiced' : ''}">
-      <div class="job-header">
+      <div class="job-header clickable" onclick="openDetail('${j.id}')" title="Open job details">
         <span class="reg-plate">${j.reg || '—'}</span>
         <div class="job-info">
-          <div class="job-name">${j.name || '—'} ${tags.join('')}</div>
-          <div class="job-vehicle">${j.vehicle || '—'}</div>
-          <div class="job-addr">${j.mobile ? '📱 ' + j.mobile : 'No mobile'}</div>
-          <div class="job-addr">${j.address || ''}</div>
+          <div class="job-name">${escHtml(j.name) || '—'} ${tags.join('')}</div>
+          <div class="job-vehicle">${escHtml(j.vehicle) || '—'}</div>
+          <div class="job-addr">${j.mobile ? '📱 ' + escHtml(j.mobile) : 'No mobile'}</div>
+          <div class="job-addr">${escHtml(j.address) || ''}</div>
         </div>
         <span class="days-pill ${dClass}">${days}d</span>
       </div>
@@ -481,84 +647,28 @@ function renderJobs() {
       </div>
       <div class="job-footer">
         <span class="job-refs">
-          ${j.invoice_number ? 'INV ' + j.invoice_number + ' · ' : ''}
-          REF ${j.acg_ref || '—'}
-          ${j.laird_ref ? ' · LAIRD ' + j.laird_ref : ''}
+          ${j.invoice_number ? 'INV ' + escHtml(j.invoice_number) + ' · ' : ''}
+          REF ${escHtml(j.acg_ref) || '—'}
+          ${j.laird_ref ? ' · LAIRD ' + escHtml(j.laird_ref) : ''}
         </span>
         <select class="stage-select" onchange="updateStage('${j.id}', this.value)">${opts}</select>
-        <select class="week-select" onchange="setWeek('${j.id}', this.value)" title="Schedule this job for a repair week">
-          <option value="" ${!j.repair_week?'selected':''}>⏱ Unscheduled</option>
-          <option value="this" ${j.repair_week==='this'?'selected':''}>📅 This week</option>
-          <option value="next" ${j.repair_week==='next'?'selected':''}>📆 Next week</option>
-        </select>
+        ${weekSelectHTML(j)}
         <a href="${trackerUrl}" target="_blank" class="btn-link" title="Customer tracker link">🔗</a>
         <button class="btn-icon" onclick="copyLink('${trackerUrl}')" title="Copy tracker link">📋</button>
         <button class="btn-icon" onclick="removeJob('${j.id}', '${(j.name||'').replace(/'/g,"\\'")}', '${j.reg||''}')" title="Remove job" style="color:var(--red)">✕</button>
       </div>
-      <textarea class="notes-area" placeholder="Add notes…" onblur="saveNotes('${j.id}', this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.blur()}">${j.notes || ''}</textarea>
+      <textarea class="notes-area" placeholder="Quick note…" onblur="saveNotes('${j.id}', this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.blur()}">${escHtml(j.notes) || ''}</textarea>
       <div class="notes-saved" id="saved-${j.id}">✓ Saved</div>
       ${j.damage ? `
       <div class="damage-section">
         <button class="damage-toggle has-damage" onclick="toggleDamage('${j.id}')">
           <span>🔧 Damage details</span><span id="damage-arrow-${j.id}">▼</span>
         </button>
-        <div class="damage-body" id="damage-body-${j.id}">${j.damage}</div>
+        <div class="damage-body" id="damage-body-${j.id}">${escHtml(j.damage)}</div>
       </div>` : ''}
     </div>`;
   }).join('');
   renderStats();
-}
-function openDetail(id) {
-  const j = jobs.find(x => x.id === id);
-  if (!j) return;
-  const pips = STAGES.map((_, i) => `<div class="detail-pip ${pipClass(i, j.stage)}"></div>`).join('');
-  const pct = Math.round((j.stage / LAST_STAGE) * 100);
-  const opts = STAGES.map((s, i) => `<option value="${i}" ${j.stage===i?'selected':''}>${s.label}</option>`).join('');
-  const trackerUrl = `${SITE_URL}/track/${(j.reg||'').replace(/\s/g,'')}`;
-  const stageItems = STAGES.map((s, i) => {
-    const done = i < j.stage;
-    const active = i === j.stage;
-    const dotClass = done ? 'done' : active ? 'active' : '';
-    const textClass = done ? '' : active ? 'active' : 'pending';
-    const icon = done ? '✓' : active ? '▶' : '';
-    if (!done && !active && i > j.stage + 2) return '';
-    return `<div class="detail-stage-item">
-      <div class="detail-dot ${dotClass}">${icon}</div>
-      <span class="detail-stage-text ${textClass}">${s.label}${active ? '<span class="in-prog">In progress</span>' : ''}</span>
-    </div>`;
-  }).join('');
-  document.getElementById('detail-content').innerHTML = `
-    <div class="detail-header">
-      <div class="detail-reg">${j.reg || '—'}</div>
-      <div class="detail-info">
-        <div class="detail-name">${j.name || '—'}</div>
-        <div class="detail-vehicle">${j.vehicle || '—'}</div>
-        <div class="detail-addr">${j.address || ''}</div>
-      </div>
-    </div>
-    <div class="detail-stage-label">${STAGES[j.stage]?.label || '—'}</div>
-    <div class="detail-pct">${pct}% complete · ${daysSince(j.added_date)} days on site</div>
-    <div class="detail-progress">${pips}</div>
-    <div class="detail-stages">${stageItems}</div>
-    <div class="detail-refs">
-      ${j.invoice_number ? 'INV ' + j.invoice_number + '  ·  ' : ''}ACG ${j.acg_ref || '—'}${j.laird_ref ? '  ·  LAIRD ' + j.laird_ref : ''}
-      ${j.mobile ? '<br>📱 ' + j.mobile : ''}
-    </div>
-    <div class="detail-actions">
-      <select class="detail-select" onchange="updateStageFromDetail('${j.id}', this.value)">${opts}</select>
-      <button class="detail-close" onclick="copyLink('${trackerUrl}')">📋 Tracker</button>
-      <button class="detail-del" onclick="removeJob('${j.id}', '${(j.name||'').replace(/'/g,"\\'")}', '${j.reg||''}')">Remove</button>
-    </div>`;
-  document.getElementById('detail-modal').classList.add('open');
-}
-function closeDetail(e) {
-  if (e.target === document.getElementById('detail-modal')) {
-    document.getElementById('detail-modal').classList.remove('open');
-  }
-}
-async function updateStageFromDetail(id, stage) {
-  await updateStage(id, stage);
-  openDetail(id);
 }
 function renderStats() {
   const inProg = jobs.filter(j => j.stage < INVOICED_STAGE).length;
@@ -572,21 +682,32 @@ function renderStats() {
   `;
 }
 async function updateStage(id, stage) {
-  const { error } = await db.from('jobs').update({ stage: parseInt(stage), updated_at: new Date().toISOString() }).eq('id', id);
-  if (error) { alert('Error updating stage: ' + error.message); return; }
+  stage = parseInt(stage);
   const j = jobs.find(x => x.id === id);
+  const sd = Object.assign({}, (j && j.stage_dates) || {});
+  if (sd[stage] == null) sd[stage] = todayISO();
+  const { error } = await db.from('jobs').update({ stage, stage_dates: sd, updated_at: new Date().toISOString() }).eq('id', id);
+  if (error) { alert('Error updating stage: ' + error.message); return; }
   if (j) {
-    j.stage = parseInt(stage);
-    addLog(`${j.reg} — ${j.name} moved to "${STAGES[parseInt(stage)]?.label}"`, false);
+    j.stage = stage;
+    j.stage_dates = sd;
+    logEvent(j, 'stage', 'Moved to "' + (STAGES[stage] ? STAGES[stage].label : stage) + '"', false);
   }
   renderJobs();
+  if (document.getElementById('week-view').style.display === 'block') renderWeek();
+}
+async function updateStageFromDetail(id, stage) {
+  await updateStage(id, stage);
+  renderDetail();
 }
 async function removeJob(id, name, reg) {
   if (!confirm(`Remove ${name} (${reg}) from dashboard?\n\nThis should only be done when remittance has been received from ACG.`)) return;
+  const j = jobs.find(x => x.id === id);
+  if (j) await logEvent(j, 'removed', 'Removed from dashboard', false);   // event survives (job_id set null)
   const { error } = await db.from('jobs').delete().eq('id', id);
   if (error) { alert('Error removing job: ' + error.message); return; }
   jobs = jobs.filter(x => x.id !== id);
-  addLog(`${reg} — ${name} removed from dashboard`, false);
+  if (detailJobId === id) document.getElementById('detail-modal').classList.remove('open');
   renderJobs();
   if (document.getElementById('week-view').style.display === 'block') renderWeek();
 }
@@ -599,9 +720,14 @@ async function addJob() {
   const acg_ref = document.getElementById('f-ref').value.trim();
   const stage = parseInt(document.getElementById('f-stage').value);
   if (!name || !reg || !vehicle) { alert('Please fill in name, registration and vehicle.'); return; }
-  const { error } = await db.from('jobs').insert([{ name, reg, vehicle, address, invoice_number, acg_ref, stage, auth_confirmed: stage >= 3, added_date: new Date().toISOString().split('T')[0] }]);
+  const stage_dates = {}; stage_dates[stage] = todayISO();
+  const { data, error } = await db.from('jobs').insert([{
+    name, reg, vehicle, address, invoice_number, acg_ref, stage,
+    auth_confirmed: stage >= 3, added_date: todayISO(), stage_dates
+  }]).select();
   if (error) { alert('Error adding job: ' + error.message); return; }
-  addLog(`New job added manually: ${reg} — ${name}`, false);
+  const newJob = (data && data[0]) || { id: null, reg, name };
+  logEvent(newJob, 'created', 'Job added manually — starting at "' + (STAGES[stage] ? STAGES[stage].label : stage) + '"', false);
   closeModal('add-modal');
   ['f-name','f-reg','f-vehicle','f-addr','f-inv','f-ref'].forEach(id => document.getElementById(id).value = '');
   await refreshJobs();
@@ -619,9 +745,10 @@ function toggleDamage(id) {
 }
 async function saveNotes(id, el) {
   const notes = el.value;
+  const j = jobs.find(x => x.id === id);
+  if (j && (j.notes || '') === notes) return;
   const { error } = await db.from('jobs').update({ notes, updated_at: new Date().toISOString() }).eq('id', id);
   if (!error) {
-    const j = jobs.find(x => x.id === id);
     if (j) j.notes = notes;
     const saved = document.getElementById('saved-' + id);
     if (saved) { saved.style.display = 'block'; setTimeout(() => saved.style.display = 'none', 2000); }
@@ -640,18 +767,6 @@ function setFilter(f, btn) {
   btn.classList.add('active');
   renderJobs();
 }
-function addLog(msg, auto = false) {
-  const now = new Date();
-  const t = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
-  logs.unshift({ t, msg, auto });
-  const el = document.getElementById('log-box');
-  if (el) el.innerHTML = logs.slice(0,20).map(l => `
-    <div class="log-entry">
-      <span class="log-time">${l.t}</span>
-      ${l.auto ? '<span class="log-auto">AUTO</span>' : ''}
-      <span style="color:var(--muted);${l.auto?'color:#185FA5;font-weight:500':''}">${l.msg}</span>
-    </div>`).join('');
-}
 function populateStageSelects() {
   const opts = STAGES.map((s, i) => `<option value="${i}">${s.label}</option>`).join('');
   const sf = document.getElementById('stage-filter');
@@ -664,9 +779,276 @@ function closeModal(id) { document.getElementById(id).classList.remove('open'); 
 document.querySelectorAll('.modal-overlay').forEach(m => {
   m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
 });
-// ─── REPAIR SCHEDULE ──────────────────────────────────────
-function showWeek(which) {
-  if (which) weekTab = which;
+// ─── JOB DETAIL SHEET ─────────────────────────────────────
+async function openDetail(id) {
+  detailJobId = id;
+  detailNotes = []; detailParts = []; detailEvents = []; detailPhotos = [];
+  renderDetail();
+  document.getElementById('detail-modal').classList.add('open');
+  loadDetailData(id);
+}
+function closeDetail(e) {
+  if (e.target === document.getElementById('detail-modal')) {
+    document.getElementById('detail-modal').classList.remove('open');
+  }
+}
+async function loadDetailData(id) {
+  const [n, p, e] = await Promise.all([
+    db.from('job_notes').select('*').eq('job_id', id).order('created_at', { ascending: false }),
+    db.from('job_parts').select('*').eq('job_id', id).order('created_at', { ascending: true }),
+    db.from('job_events').select('*').eq('job_id', id).order('created_at', { ascending: false }).limit(100),
+  ]);
+  if (n.error || p.error || e.error) historyOk = false;
+  detailNotes = n.data || [];
+  detailParts = p.data || [];
+  detailEvents = e.data || [];
+  try {
+    const ph = await db.storage.from(PHOTO_BUCKET).list(id, { limit: 100, sortBy: { column: 'created_at', order: 'desc' } });
+    detailPhotos = (ph.data || []).filter(f => f.name !== '.emptyFolderPlaceholder');
+  } catch (err) { detailPhotos = []; }
+  if (detailJobId === id) renderDetail();
+}
+function setDetailTab(t) { detailTab = t; renderDetail(); }
+function renderDetail() {
+  const j = jobs.find(x => x.id === detailJobId);
+  const el = document.getElementById('detail-content');
+  if (!j) { el.innerHTML = ''; return; }
+  const sd = j.stage_dates || {};
+  const pips = STAGES.map((_, i) => `<div class="detail-pip ${pipClass(i, j.stage)}"></div>`).join('');
+  const pct = Math.round((j.stage / LAST_STAGE) * 100);
+  const opts = STAGES.map((s, i) => `<option value="${i}" ${j.stage===i?'selected':''}>${s.label}</option>`).join('');
+  const trackerUrl = `${SITE_URL}/track/${(j.reg||'').replace(/\s/g,'')}`;
+  const chips = [];
+  chips.push(`<span class="chip">Added <strong>${fmtShortISO(j.added_date)}</strong></span>`);
+  chips.push(`<span class="chip"><strong>${daysSince(j.added_date)}d</strong> on the books</span>`);
+  if (sd[1]) chips.push(`<span class="chip">On site <strong>${fmtShortISO(sd[1])}</strong></span>`);
+  chips.push(j.auth_confirmed ? `<span class="chip" style="background:var(--green-light);border-color:#5CB87A;color:#0F6E56">✓ Authorised</span>` : `<span class="chip" style="background:var(--amber-light);border-color:#E8C48A;color:var(--amber)">Awaiting auth</span>`);
+  if (sd[3]) chips.push(`<span class="chip">In repair <strong>${fmtShortISO(sd[3])}</strong></span>`);
+  if (sd[INVOICED_STAGE]) chips.push(`<span class="chip">Invoiced <strong>${fmtShortISO(sd[INVOICED_STAGE])}</strong></span>`);
+  if (j.repair_week_start) chips.push(`<span class="chip">🗓 Wk of <strong>${fmtShortISO(j.repair_week_start)}</strong></span>`);
+  const tabBtn = (key, label) => `<button class="dtab ${detailTab===key?'active':''}" onclick="setDetailTab('${key}')">${label}</button>`;
+  let body = '';
+  if (detailTab === 'timeline') body = buildTimeline(j, sd);
+  else if (detailTab === 'notes') body = buildNotes(j);
+  else if (detailTab === 'parts') body = buildParts(j);
+  else if (detailTab === 'photos') body = buildPhotos(j);
+  else if (detailTab === 'damage') body = buildDamage(j);
+  el.innerHTML = `
+    <div class="detail-header">
+      <div class="detail-reg">${j.reg || '—'}</div>
+      <div class="detail-info">
+        <div class="detail-name">${escHtml(j.name) || '—'}</div>
+        <div class="detail-vehicle">${escHtml(j.vehicle) || '—'}</div>
+        <div class="detail-addr">${escHtml(j.address) || ''}</div>
+      </div>
+    </div>
+    <div class="detail-stage-label">${STAGES[j.stage]?.label || '—'}</div>
+    <div class="detail-pct">${pct}% complete</div>
+    <div class="detail-progress">${pips}</div>
+    <div class="kv-chips">${chips.join('')}</div>
+    <div class="detail-refs">
+      ${j.invoice_number ? 'INV ' + escHtml(j.invoice_number) + '  ·  ' : ''}ACG ${escHtml(j.acg_ref) || '—'}${j.laird_ref ? '  ·  LAIRD ' + escHtml(j.laird_ref) : ''}
+      ${j.mobile ? '<br>📱 ' + escHtml(j.mobile) : ''}
+    </div>
+    <div class="dtabs">
+      ${tabBtn('timeline', '📋 Timeline')}
+      ${tabBtn('notes', '📝 Notes' + (detailNotes.length ? ' (' + detailNotes.length + ')' : ''))}
+      ${tabBtn('parts', '🔩 Parts' + (detailParts.length ? ' (' + detailParts.length + ')' : ''))}
+      ${tabBtn('photos', '📷 Photos' + (detailPhotos.length ? ' (' + detailPhotos.length + ')' : ''))}
+      ${tabBtn('damage', '🔧 Damage')}
+    </div>
+    <div id="detail-tab-body">${body}</div>
+    <div class="detail-actions">
+      <select class="detail-select" onchange="updateStageFromDetail('${j.id}', this.value)">${opts}</select>
+      <button class="detail-close" onclick="copyLink('${trackerUrl}')">📋 Tracker</button>
+      <button class="detail-del" onclick="removeJob('${j.id}', '${(j.name||'').replace(/'/g,"\\'")}', '${j.reg||''}')">Remove</button>
+    </div>`;
+}
+function migrationHint() {
+  return '<div class="hint-box">This feature needs the database upgrade — run <strong>supabase-migration.sql</strong> once in Supabase → SQL Editor.</div>';
+}
+// — Timeline tab: every stage with the date it was reached + full event history —
+function buildTimeline(j, sd) {
+  const stageItems = STAGES.map((s, i) => {
+    const done = i < j.stage || (j.stage === COMPLETE_STAGE && i <= COMPLETE_STAGE);
+    const active = i === j.stage;
+    const dotClass = done && !active ? 'done' : active ? 'active' : '';
+    const textClass = done && !active ? '' : active ? 'active' : 'pending';
+    const icon = done && !active ? '✓' : active ? '▶' : '';
+    const dt = sd[i] ? fmtShortISO(sd[i]) : '';
+    return `<div class="detail-stage-item">
+      <div class="detail-dot ${dotClass}">${icon}</div>
+      <span class="detail-stage-text ${textClass}">${s.label}${active ? '<span class="in-prog">In progress</span>' : ''}</span>
+      <span class="stage-date">${dt}</span>
+    </div>`;
+  }).join('');
+  let history;
+  if (!historyOk) history = migrationHint();
+  else if (!detailEvents.length) history = '<div style="font-size:12px;color:var(--muted);padding:8px 2px">No history recorded yet — every stage move, note, part and photo will be date-logged here from now on.</div>';
+  else history = detailEvents.map(e => `
+    <div class="log-entry">
+      <span class="log-time">${fmtDT(e.created_at)}</span>
+      ${e.auto ? '<span class="log-auto">AUTO</span>' : ''}
+      <span style="color:var(--muted)">${escHtml(e.message)}</span>
+    </div>`).join('');
+  return `<div>${stageItems}</div>
+    <div class="section-label">Full history</div>
+    <div class="log-box">${history}</div>`;
+}
+// — Notes tab: timestamped notes —
+function buildNotes(j) {
+  if (!historyOk) return migrationHint();
+  const list = detailNotes.length ? detailNotes.map(n => `
+    <div class="note-item">
+      <div style="flex:1">
+        <div class="note-body">${escHtml(n.note)}</div>
+        <div class="note-time">${fmtDT(n.created_at)}</div>
+      </div>
+      <button class="note-del" onclick="deleteNote('${n.id}')" title="Delete note">✕</button>
+    </div>`).join('') : '<div style="font-size:12px;color:var(--muted);padding:8px 2px">No dated notes yet.</div>';
+  return `
+    <div class="add-note-row">
+      <textarea id="new-note-text" placeholder="Add a note — it gets stamped with today's date & time…"></textarea>
+      <button class="btn btn-primary" onclick="addNote()">Add</button>
+    </div>
+    ${list}
+    ${j.notes ? `<div class="section-label">Quick note (from job card)</div><div class="note-item"><div class="note-body">${escHtml(j.notes)}</div></div>` : ''}`;
+}
+async function addNote() {
+  const ta = document.getElementById('new-note-text');
+  const note = (ta.value || '').trim();
+  if (!note) return;
+  const j = jobs.find(x => x.id === detailJobId);
+  const { data, error } = await db.from('job_notes').insert([{ job_id: detailJobId, note }]).select();
+  if (error) { alert('Error saving note: ' + error.message); return; }
+  detailNotes.unshift((data && data[0]) || { id: null, note, created_at: new Date().toISOString() });
+  if (j) logEvent(j, 'note', 'Note added: "' + (note.length > 80 ? note.slice(0, 80) + '…' : note) + '"', false);
+  renderDetail();
+}
+async function deleteNote(id) {
+  if (!confirm('Delete this note?')) return;
+  const { error } = await db.from('job_notes').delete().eq('id', id);
+  if (error) { alert('Error deleting note: ' + error.message); return; }
+  detailNotes = detailNotes.filter(n => n.id !== id);
+  renderDetail();
+}
+// — Parts tab: parts & costs with dates —
+function buildParts(j) {
+  if (!historyOk) return migrationHint();
+  const rows = detailParts.length ? detailParts.map(p => `
+    <div class="part-row">
+      <span class="part-desc">${escHtml(p.description)}</span>
+      <span class="part-cost">${p.cost != null ? '£' + Number(p.cost).toFixed(2) : ''}</span>
+      <select class="part-status" onchange="setPartStatus('${p.id}', this.value)">
+        <option value="ordered" ${p.status==='ordered'?'selected':''}>Ordered</option>
+        <option value="arrived" ${p.status==='arrived'?'selected':''}>Arrived</option>
+        <option value="fitted" ${p.status==='fitted'?'selected':''}>Fitted</option>
+      </select>
+      <button class="note-del" onclick="deletePart('${p.id}')" title="Delete part">✕</button>
+      <span class="part-dates">Ordered ${fmtShortISO(p.ordered_date) || '—'}${p.arrived_date ? ' · Arrived ' + fmtShortISO(p.arrived_date) : ''}</span>
+    </div>`).join('') : '<div style="font-size:12px;color:var(--muted);padding:8px 2px">No parts logged yet.</div>';
+  const total = detailParts.reduce((s, p) => s + (Number(p.cost) || 0), 0);
+  return `
+    <div class="add-part-row">
+      <input id="new-part-desc" placeholder="Part description…" style="flex:2;min-width:140px">
+      <input id="new-part-cost" type="number" step="0.01" min="0" placeholder="£ cost" style="flex:1;min-width:80px">
+      <button class="btn btn-primary" onclick="addPart()">Add</button>
+    </div>
+    ${rows}
+    ${detailParts.length ? `<div class="parts-total">Parts total: £${total.toFixed(2)}</div>` : ''}`;
+}
+async function addPart() {
+  const desc = (document.getElementById('new-part-desc').value || '').trim();
+  const costRaw = document.getElementById('new-part-cost').value;
+  const cost = costRaw === '' ? null : parseFloat(costRaw);
+  if (!desc) return;
+  const j = jobs.find(x => x.id === detailJobId);
+  const { data, error } = await db.from('job_parts').insert([{ job_id: detailJobId, description: desc, cost, status: 'ordered', ordered_date: todayISO() }]).select();
+  if (error) { alert('Error saving part: ' + error.message); return; }
+  detailParts.push((data && data[0]) || { id: null, description: desc, cost, status: 'ordered', ordered_date: todayISO() });
+  if (j) logEvent(j, 'part', 'Part ordered: ' + desc + (cost != null ? ' (£' + cost.toFixed(2) + ')' : ''), false);
+  renderDetail();
+}
+async function setPartStatus(id, status) {
+  const p = detailParts.find(x => x.id === id);
+  const upd = { status };
+  if (status !== 'ordered' && p && !p.arrived_date) upd.arrived_date = todayISO();
+  const { error } = await db.from('job_parts').update(upd).eq('id', id);
+  if (error) { alert('Error updating part: ' + error.message); return; }
+  if (p) { p.status = status; if (upd.arrived_date) p.arrived_date = upd.arrived_date; }
+  const j = jobs.find(x => x.id === detailJobId);
+  if (j && p) logEvent(j, 'part', 'Part ' + status + ': ' + p.description, false);
+  renderDetail();
+}
+async function deletePart(id) {
+  if (!confirm('Delete this part?')) return;
+  const { error } = await db.from('job_parts').delete().eq('id', id);
+  if (error) { alert('Error deleting part: ' + error.message); return; }
+  detailParts = detailParts.filter(p => p.id !== id);
+  renderDetail();
+}
+// — Photos tab —
+function buildPhotos(j) {
+  const grid = detailPhotos.length ? `<div class="photo-grid">` + detailPhotos.map(f => {
+    const url = db.storage.from(PHOTO_BUCKET).getPublicUrl(detailJobId + '/' + f.name).data.publicUrl;
+    return `<div class="photo-thumb">
+      <a href="${url}" target="_blank" rel="noopener"><img src="${url}" loading="lazy" alt="Job photo"></a>
+      <button class="photo-del" onclick="deletePhoto('${escAttr(f.name)}')" title="Delete photo">✕</button>
+    </div>`;
+  }).join('') + `</div>` : '<div style="font-size:12px;color:var(--muted);padding:8px 2px">No photos yet — add damage and repair photos here.</div>';
+  return `
+    <label class="btn btn-primary upload-btn" style="cursor:pointer">📷 Add photos
+      <input type="file" hidden multiple accept="image/*" onchange="uploadPhotos(this)">
+    </label>
+    <span id="upload-status" style="font-size:12px;color:var(--muted);margin-left:8px"></span>
+    ${grid}`;
+}
+async function uploadPhotos(input) {
+  const files = Array.from(input.files || []);
+  if (!files.length) return;
+  const status = document.getElementById('upload-status');
+  const j = jobs.find(x => x.id === detailJobId);
+  let done = 0, failed = 0;
+  for (const file of files) {
+    if (status) status.textContent = `Uploading ${done + failed + 1}/${files.length}…`;
+    const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const pathName = detailJobId + '/' + Date.now() + '-' + safe;
+    const { error } = await db.storage.from(PHOTO_BUCKET).upload(pathName, file, { cacheControl: '3600', upsert: false });
+    if (error) { failed++; console.error(error); } else done++;
+  }
+  if (failed && status) status.textContent = `${done} uploaded, ${failed} failed (has the migration been run?)`;
+  else if (status) status.textContent = '';
+  if (done && j) logEvent(j, 'photo', done + ' photo' + (done > 1 ? 's' : '') + ' added', false);
+  const ph = await db.storage.from(PHOTO_BUCKET).list(detailJobId, { limit: 100, sortBy: { column: 'created_at', order: 'desc' } });
+  detailPhotos = (ph.data || []).filter(f => f.name !== '.emptyFolderPlaceholder');
+  renderDetail();
+}
+async function deletePhoto(name) {
+  if (!confirm('Delete this photo?')) return;
+  const { error } = await db.storage.from(PHOTO_BUCKET).remove([detailJobId + '/' + name]);
+  if (error) { alert('Error deleting photo: ' + error.message); return; }
+  detailPhotos = detailPhotos.filter(f => f.name !== name);
+  renderDetail();
+}
+// — Damage tab —
+function buildDamage(j) {
+  return `
+    <textarea class="dmg-edit" id="damage-edit" placeholder="Describe the accident & damage — panels affected, point of impact, pre-existing damage, circumstances…">${escHtml(j.damage) || ''}</textarea>
+    <div style="display:flex;justify-content:flex-end;margin-top:8px">
+      <button class="btn btn-primary" onclick="saveDamage()">Save damage details</button>
+    </div>`;
+}
+async function saveDamage() {
+  const j = jobs.find(x => x.id === detailJobId);
+  const damage = document.getElementById('damage-edit').value;
+  const { error } = await db.from('jobs').update({ damage, updated_at: new Date().toISOString() }).eq('id', detailJobId);
+  if (error) { alert('Error saving: ' + error.message); return; }
+  if (j) { j.damage = damage; logEvent(j, 'damage', 'Damage details updated', false); }
+  renderJobs();
+  renderDetail();
+}
+// ─── REPAIR SCHEDULE (WEEK-BY-WEEK) ───────────────────────
+function showWeek() {
   if ((window.location.hash || '').replace('#', '').indexOf('week') !== 0) window.location.hash = 'week';
   document.getElementById('loading-view').style.display = 'none';
   document.getElementById('admin-view').style.display = 'none';
@@ -680,23 +1062,14 @@ function showDash() {
   document.getElementById('admin-view').style.display = 'block';
   renderJobs();
 }
-function setWeekTab(w) {
-  weekTab = w;
-  renderWeek();
+function navWeek(n) { schedWeek = addWeeksISO(schedWeek, n); renderWeek(); }
+function goThisWeek() { schedWeek = mondayISO(new Date()); renderWeek(); }
+function addToWeek(sel) {
+  const id = sel.value;
+  sel.value = '';
+  if (id) setWeek(id, schedWeek);
 }
-// Schedule a job into a repair week (or clear it) from the dashboard
-async function setWeek(id, val) {
-  const { error } = await db.from('jobs').update({ repair_week: val || null, updated_at: new Date().toISOString() }).eq('id', id);
-  if (error) { alert('Error scheduling job: ' + error.message); return; }
-  const j = jobs.find(x => x.id === id);
-  if (j) {
-    j.repair_week = val || null;
-    const where = val === 'this' ? 'this week' : val === 'next' ? 'next week' : 'unscheduled';
-    addLog(`${j.reg} — ${j.name} scheduled: ${where}`, false);
-  }
-  if (document.getElementById('week-view').style.display === 'block') renderWeek();
-}
-// Save a yes/no tick-box answer
+// Save a yes/no tick-box answer (parts / supplementary checklist)
 async function setFlag(id, field, value) {
   const upd = { updated_at: new Date().toISOString() };
   upd[field] = value;
@@ -722,19 +1095,19 @@ function weekCard(j) {
   const ready = j.parts_ordered && j.parts_on_site && j.is_estimated && !j.parts_on_backorder && (!j.needs_supplementary || j.supplementary_sent);
   return `
   <div class="week-card">
-    <div class="job-header">
+    <div class="job-header clickable" onclick="openDetail('${j.id}')" title="Open job details">
       <span class="reg-plate">${j.reg || '—'}</span>
       <div class="job-info">
-        <div class="job-name">${j.name || '—'} ${ready ? '<span class="ready-badge">✓ Ready to start</span>' : ''}</div>
-        <div class="job-vehicle">${j.vehicle || '—'}</div>
-        <div class="job-addr">${j.mobile ? '📱 ' + j.mobile : ''} ${j.address ? '· ' + j.address : ''}</div>
+        <div class="job-name">${escHtml(j.name) || '—'} ${ready ? '<span class="ready-badge">✓ Ready to start</span>' : ''}</div>
+        <div class="job-vehicle">${escHtml(j.vehicle) || '—'}</div>
+        <div class="job-addr">${j.mobile ? '📱 ' + escHtml(j.mobile) : ''} ${j.address ? '· ' + escHtml(j.address) : ''}</div>
       </div>
       <span class="days-pill ${dClass}">${days}d</span>
     </div>
     <div class="progress-track">${pips}</div>
     <div class="progress-label">
       <span><strong>${STAGES[j.stage]?.label || '—'}</strong></span>
-      <span style="font-family:'DM Mono',monospace">${j.invoice_number ? 'INV ' + j.invoice_number + ' · ' : ''}REF ${j.acg_ref || '—'}${j.laird_ref ? ' · LAIRD ' + j.laird_ref : ''}</span>
+      <span style="font-family:'DM Mono',monospace">${j.invoice_number ? 'INV ' + escHtml(j.invoice_number) + ' · ' : ''}REF ${escHtml(j.acg_ref) || '—'}${j.laird_ref ? ' · LAIRD ' + escHtml(j.laird_ref) : ''}</span>
     </div>
     <div class="check-section-title">Parts</div>
     <div class="check-grid">
@@ -749,26 +1122,33 @@ function weekCard(j) {
       <label class="chk ${j.needs_supplementary?'on':''}"><input type="checkbox" ${j.needs_supplementary?'checked':''} onchange="setFlag('${j.id}','needs_supplementary',this.checked)"> Needs a supplementary</label>
       ${j.needs_supplementary ? `<label class="chk sub-chk ${j.supplementary_sent?'on':''}"><input type="checkbox" ${j.supplementary_sent?'checked':''} onchange="setFlag('${j.id}','supplementary_sent',this.checked)"> Supplementary sent</label>` : ''}
     </div>
-    <textarea class="notes-area" placeholder="Add notes…" onblur="saveNotes('${j.id}', this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.blur()}">${j.notes || ''}</textarea>
+    <textarea class="notes-area" placeholder="Quick note…" onblur="saveNotes('${j.id}', this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.blur()}">${escHtml(j.notes) || ''}</textarea>
     <div class="job-footer" style="margin-top:8px">
-      <span class="job-refs">Scheduled: ${j.repair_week === 'this' ? '📅 This week' : '📆 Next week'}</span>
-      <select class="week-select" onchange="setWeek('${j.id}', this.value)" title="Move or remove from schedule">
-        <option value="" ${!j.repair_week?'selected':''}>⏱ Unschedule</option>
-        <option value="this" ${j.repair_week==='this'?'selected':''}>📅 This week</option>
-        <option value="next" ${j.repair_week==='next'?'selected':''}>📆 Next week</option>
-      </select>
+      <span class="job-refs">Scheduled: ${weekLabel(j.repair_week_start)}</span>
+      ${weekSelectHTML(j)}
     </div>
   </div>`;
 }
 function renderWeek() {
-  document.getElementById('wt-this').classList.toggle('active', weekTab === 'this');
-  document.getElementById('wt-next').classList.toggle('active', weekTab === 'next');
-  const list = jobs.filter(j => j.repair_week === weekTab);
+  const t = mondayISO(new Date()), n = addWeeksISO(t, 1);
+  const label = document.getElementById('week-label');
+  const badge = schedWeek === t ? '<span class="wk-badge">This week</span>'
+              : schedWeek === n ? '<span class="wk-badge">Next week</span>'
+              : schedWeek < t ? '<span class="wk-badge" style="background:var(--red-light);color:var(--red)">Past</span>' : '';
+  if (label) label.innerHTML = 'Week commencing ' + fmtWeekISO(schedWeek) + badge;
+  const list = jobs.filter(j => j.repair_week_start === schedWeek);
+  // job picker: active jobs not already in this week
+  const pick = document.getElementById('week-add-select');
+  if (pick) {
+    const candidates = jobs.filter(j => j.stage < INVOICED_STAGE && j.repair_week_start !== schedWeek);
+    pick.innerHTML = '<option value="">+ Add a job to this week…</option>' +
+      candidates.map(j => `<option value="${j.id}">${escHtml(j.reg)} — ${escHtml(j.name)}${j.repair_week_start ? ' (currently wk ' + fmtShortISO(j.repair_week_start) + ')' : ''}</option>`).join('');
+  }
   const intro = document.getElementById('week-intro');
   const el = document.getElementById('week-list');
   if (!list.length) {
     if (intro) intro.textContent = '';
-    el.innerHTML = `<div class="week-empty">No jobs scheduled for <strong>${weekTab === 'this' ? 'this week' : 'next week'}</strong> yet.<br><span style="font-size:12px;color:var(--faint)">On the dashboard, use the “This week / Next week” dropdown on a job card to add one here.</span></div>`;
+    el.innerHTML = `<div class="week-empty">No jobs scheduled for the week commencing <strong>${fmtWeekISO(schedWeek)}</strong>.<br><span style="font-size:12px;color:var(--faint)">Use the picker above, or the week dropdown on any job card, to allocate jobs to this week.</span></div>`;
     return;
   }
   const readyCount = list.filter(j => j.parts_ordered && j.parts_on_site && j.is_estimated && !j.parts_on_backorder && (!j.needs_supplementary || j.supplementary_sent)).length;
@@ -787,7 +1167,7 @@ async function showTracker(reg) {
       <div class="tracker-not-found">
         <div style="font-size:40px;margin-bottom:12px">🔍</div>
         <h2>Job not found</h2>
-        <p style="color:var(--muted);font-size:13px">We couldn't find a job for registration <strong>${reg}</strong>.<br>Please call us on <strong>0151 207 9817</strong> if you need help.</p>
+        <p style="color:var(--muted);font-size:13px">We couldn't find a job for registration <strong>${escHtml(reg)}</strong>.<br>Please call us on <strong>0151 207 9817</strong> if you need help.</p>
       </div>`;
     return;
   }
@@ -819,9 +1199,9 @@ async function showTracker(reg) {
       <div class="tracker-header-sub">Vehicle repair tracker</div>
     </div>
     <div class="tracker-vehicle-card">
-      <div class="tracker-reg">${job.reg}</div>
-      <div class="tracker-vehicle-name">${job.vehicle || 'Your vehicle'}</div>
-      <div class="tracker-customer">${job.name}</div>
+      <div class="tracker-reg">${escHtml(job.reg)}</div>
+      <div class="tracker-vehicle-name">${escHtml(job.vehicle) || 'Your vehicle'}</div>
+      <div class="tracker-customer">${escHtml(job.name)}</div>
     </div>
     ${isComplete ? `
     <div class="complete-banner">
