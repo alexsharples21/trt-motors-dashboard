@@ -196,6 +196,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
 .loading { text-align: center; padding: 3rem; color: var(--muted); font-size: 14px; }
+/* GARY'S PORTAL */
+#gary-view { display: none; }
+.gary-count { font-size: 11px; background: rgba(0,0,0,0.08); border-radius: 20px; padding: 1px 8px; margin-left: 4px; }
+.tab-btn.active .gary-count { background: rgba(255,255,255,0.25); }
 /* WEEK / REPAIR SCHEDULE CALENDAR */
 #week-view { display: none; }
 .week-nav { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
@@ -290,6 +294,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
     <div style="display:flex;gap:8px;align-items:center">
       <span style="color:rgba(255,255,255,0.7);font-size:11px"><span class="live-dot"></span>Live</span>
       <button class="btn-header" onclick="showWeek()">📅 Repair schedule</button>
+      <button class="btn-header" onclick="showGary()">👤 Gary</button>
       <button class="btn-header" onclick="openModal('add-modal')">+ Add job</button>
       <a class="btn-header" href="https://web-production-eb7dd.up.railway.app/manual-invoice" target="_blank" rel="noopener" style="text-decoration:none">+ New invoice</a>
       <button class="btn-header" onclick="refreshJobs()">↻ Refresh</button>
@@ -350,6 +355,27 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
       <select class="filter-select" id="week-add-select" style="flex:1" onchange="addToWeek(this)"></select>
     </div>
     <div id="week-list"></div>
+  </div>
+</div>
+<!-- ═══════════════════════════════════════════════ -->
+<!-- GARY'S PORTAL                                    -->
+<!-- ═══════════════════════════════════════════════ -->
+<div id="gary-view">
+  <header class="header">
+    <div class="header-logo">TRT Motors — Gary's portal</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn-header" onclick="showDash()">← Dashboard</button>
+      <button class="btn-header" onclick="refreshJobs()">↻ Refresh</button>
+    </div>
+  </header>
+  <div class="container">
+    <div class="tabs">
+      <button class="tab-btn active" id="gt-est" onclick="setGaryTab('est')">📐 Needs estimating<span class="gary-count" id="gc-est"></span></button>
+      <button class="tab-btn" id="gt-auth" onclick="setGaryTab('auth')">⏳ Not authorised<span class="gary-count" id="gc-auth"></span></button>
+      <button class="tab-btn" id="gt-active" onclick="setGaryTab('active')">All active jobs<span class="gary-count" id="gc-active"></span></button>
+    </div>
+    <div class="week-intro" id="gary-intro"></div>
+    <div id="gary-list"></div>
   </div>
 </div>
 <!-- ═══════════════════════════════════════════════ -->
@@ -431,13 +457,17 @@ if (trackMatch) {
   showTracker(trackMatch[1].toUpperCase().replace(/\s/g, ''));
 } else {
   showAdmin().then(() => {
-    if ((window.location.hash || '').replace('#', '').indexOf('week') === 0) showWeek();
+    const h0 = (window.location.hash || '').replace('#', '');
+    if (h0.indexOf('week') === 0) showWeek();
+    else if (h0.indexOf('gary') === 0) showGary();
   });
 }
 window.addEventListener('hashchange', () => {
   if (trackMatch) return;
   const h = (window.location.hash || '').replace('#', '');
-  if (h.indexOf('week') === 0) showWeek(); else showDash();
+  if (h.indexOf('week') === 0) showWeek();
+  else if (h.indexOf('gary') === 0) showGary();
+  else showDash();
 });
 // ─── DATE HELPERS ─────────────────────────────────────────
 function isoLocal(d) {
@@ -526,6 +556,7 @@ async function refreshJobs() {
   });
   renderJobs();
   if (document.getElementById('week-view').style.display === 'block') renderWeek();
+  if (document.getElementById('gary-view').style.display === 'block') renderGary();
   if (detailJobId && document.getElementById('detail-modal').classList.contains('open')) renderDetail();
   loadEvents();
 }
@@ -761,6 +792,7 @@ async function updateStage(id, stage) {
   }
   renderJobs();
   if (document.getElementById('week-view').style.display === 'block') renderWeek();
+  if (document.getElementById('gary-view').style.display === 'block') renderGary();
 }
 async function updateStageFromDetail(id, stage) {
   await updateStage(id, stage);
@@ -858,6 +890,7 @@ async function setFlag(id, field, value) {
   }
   renderJobs();
   if (document.getElementById('week-view').style.display === 'block') renderWeek();
+  if (document.getElementById('gary-view').style.display === 'block') renderGary();
   if (detailJobId === id && document.getElementById('detail-modal').classList.contains('open')) renderDetail();
 }
 async function setText(id, field, value) {
@@ -1172,14 +1205,85 @@ function showWeek() {
   document.getElementById('loading-view').style.display = 'none';
   document.getElementById('admin-view').style.display = 'none';
   document.getElementById('tracker-view').style.display = 'none';
+  document.getElementById('gary-view').style.display = 'none';
   document.getElementById('week-view').style.display = 'block';
   renderWeek();
 }
 function showDash() {
   if (window.location.hash) history.replaceState(null, '', window.location.pathname);
   document.getElementById('week-view').style.display = 'none';
+  document.getElementById('gary-view').style.display = 'none';
   document.getElementById('admin-view').style.display = 'block';
   renderJobs();
+}
+// ─── GARY'S PORTAL ────────────────────────────────────────
+let garyTab = 'est';
+function showGary() {
+  if ((window.location.hash || '').replace('#', '').indexOf('gary') !== 0) window.location.hash = 'gary';
+  document.getElementById('loading-view').style.display = 'none';
+  document.getElementById('admin-view').style.display = 'none';
+  document.getElementById('tracker-view').style.display = 'none';
+  document.getElementById('week-view').style.display = 'none';
+  document.getElementById('gary-view').style.display = 'block';
+  renderGary();
+}
+function setGaryTab(t) { garyTab = t; renderGary(); }
+function garyLists() {
+  const onSitePlus = j => j.stage >= ON_SITE_STAGE && j.stage < INVOICED_STAGE;
+  return {
+    est:    jobs.filter(j => onSitePlus(j) && !j.is_estimated),
+    auth:   jobs.filter(j => onSitePlus(j) && !j.auth_confirmed),
+    active: jobs.filter(j => j.stage < INVOICED_STAGE),
+  };
+}
+function garyCard(j) {
+  const days = daysSince(j.added_date);
+  const dClass = days <= 7 ? 'days-ok' : days <= 14 ? 'days-warn' : 'days-over';
+  const pips = STAGES.map((_, i) => `<div class="pip ${pipClass(i, j.stage)}"></div>`).join('');
+  const tags = [];
+  tags.push(j.is_estimated ? '<span class="tag tag-est">✓ Estimated</span>' : '<span class="tag tag-no-auth">Not estimated</span>');
+  tags.push(j.auth_confirmed ? '<span class="tag tag-auth">✓ Authorised</span>' : '<span class="tag tag-no-auth">Awaiting auth</span>');
+  if (j.repair_day) tags.push(`<span class="tag tag-week">🗓 ${fmtWeekISO(j.repair_day)}</span>`);
+  else if (j.repair_week_start) tags.push(`<span class="tag tag-week">🗓 Wk ${fmtShortISO(j.repair_week_start)}</span>`);
+  return `
+  <div class="job-card${j.stage === 0 ? ' stage-new' : (j.stage >= ON_SITE_STAGE && j.stage < IN_REPAIR_STAGE) ? ' stage-progress' : ''}">
+    <div class="job-header clickable" onclick="openDetail('${j.id}')" title="Open job details">
+      <span class="reg-plate">${j.reg || '—'}</span>
+      <div class="job-info">
+        <div class="job-name">${escHtml(j.name) || '—'} ${tags.join('')}</div>
+        <div class="job-vehicle">${escHtml(j.vehicle) || '—'}</div>
+        <div class="job-addr">${j.mobile ? '📱 ' + escHtml(j.mobile) : ''} ${j.address ? '· ' + escHtml(j.address) : ''}</div>
+      </div>
+      <span class="days-pill ${dClass}">${days}d</span>
+    </div>
+    <div class="progress-track">${pips}</div>
+    <div class="progress-label">
+      <span><strong>${STAGES[j.stage]?.label || '—'}</strong></span>
+      <span style="font-family:'DM Mono',monospace">${j.invoice_number ? 'INV ' + escHtml(j.invoice_number) + ' · ' : ''}REF ${escHtml(j.acg_ref) || '—'}</span>
+    </div>
+    ${j.damage ? `<div class="damage-body open" style="margin-top:6px">${escHtml(j.damage)}</div>` : ''}
+  </div>`;
+}
+function renderGary() {
+  const lists = garyLists();
+  document.getElementById('gt-est').classList.toggle('active', garyTab === 'est');
+  document.getElementById('gt-auth').classList.toggle('active', garyTab === 'auth');
+  document.getElementById('gt-active').classList.toggle('active', garyTab === 'active');
+  document.getElementById('gc-est').textContent = lists.est.length;
+  document.getElementById('gc-auth').textContent = lists.auth.length;
+  document.getElementById('gc-active').textContent = lists.active.length;
+  const intro = document.getElementById('gary-intro');
+  if (intro) intro.innerHTML =
+    garyTab === 'est' ? 'Jobs on site or further along that still <strong>need an estimate</strong> — click a job, then use the ✅ Checklist tab to tick it off when done.'
+    : garyTab === 'auth' ? 'Jobs on site or further along that are still <strong>waiting on authorisation</strong>.'
+    : 'Every job currently on the books (not yet invoiced).';
+  const list = lists[garyTab] || [];
+  const el = document.getElementById('gary-list');
+  if (!list.length) {
+    el.innerHTML = `<div class="week-empty">${garyTab === 'est' ? '🎉 Nothing waiting for an estimate.' : garyTab === 'auth' ? '🎉 Nothing waiting on authorisation.' : 'No active jobs.'}</div>`;
+    return;
+  }
+  el.innerHTML = list.map(garyCard).join('');
 }
 function navWeek(n) { schedWeek = addWeeksISO(schedWeek, n); renderWeek(); }
 function goThisWeek() { schedWeek = mondayISO(new Date()); renderWeek(); }
