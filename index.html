@@ -175,6 +175,13 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .tag-supp { background: #F0E6FB; color: #5B2D87; }
 .tag-week { background: #EDEBFF; color: #3B2DA3; }
 .tag-est { background: var(--green-light); color: #0F6E56; }
+.tag-money { background: #16324F; color: #fff; font-family: 'DM Mono', monospace; }
+.cal-total { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 600; color: #16324F; margin-top: 3px; }
+.week-totals { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.wt-item { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 14px; flex: 1; min-width: 105px; }
+.wt-item.wt-grand { border: 1.5px solid var(--blue); background: #EDEBFF; }
+.wt-val { font-size: 15px; font-weight: 600; font-family: 'DM Mono', monospace; white-space: nowrap; }
+.wt-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
 .days-pill { font-size: 11px; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
 .days-ok { background: var(--green-light); color: #0F6E56; }
 .days-warn { background: var(--amber-light); color: var(--amber); }
@@ -520,6 +527,9 @@ function escAttr(s) {
 function readyToStart(j) {
   return !!(j.parts_ordered && j.parts_on_site && j.is_estimated && !j.parts_on_backorder && (!j.needs_supplementary || j.supplementary_sent));
 }
+function fmtGBP(n) {
+  return '£' + Number(n).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
 // ─── ADMIN ────────────────────────────────────────────────
 async function showAdmin() {
   document.getElementById('loading-view').style.display = 'none';
@@ -538,7 +548,7 @@ async function refreshJobs() {
   // Merge schedule / checklist / history fields straight from the base table,
   // so they're always present even if the view doesn't expose them.
   const { data: extra, error: exErr } = await db.from('jobs')
-    .select('id,repair_week,repair_week_start,repair_day,stage_dates,parts_ordered,parts_on_site,parts_on_backorder,backorder_part,is_estimated,needs_supplementary,supplementary_sent');
+    .select('id,repair_week,repair_week_start,repair_day,stage_dates,repair_grand_total,labour_cost,paint_cost,parts_cost,specialist_cost,sub_total,vat_total,parts_ordered,parts_on_site,parts_on_backorder,backorder_part,is_estimated,needs_supplementary,supplementary_sent');
   if (!exErr && extra) {
     const map = {};
     extra.forEach(e => { map[e.id] = e; });
@@ -711,6 +721,7 @@ function renderJobs() {
     const tags = [];
     if (j.auth_confirmed) tags.push(`<span class="tag tag-auth">✓ Authorised</span>`);
     else tags.push(`<span class="tag tag-no-auth">Awaiting auth</span>`);
+    if (j.repair_grand_total != null) tags.push(`<span class="tag tag-money">${fmtGBP(j.repair_grand_total)}</span>`);
     if (j.is_estimated) tags.push(`<span class="tag tag-est">✓ Estimated</span>`);
     if (j.has_supplementary) {
       let suppLabel = 'Received supplementary';
@@ -901,6 +912,23 @@ async function setText(id, field, value) {
   const j = jobs.find(x => x.id === id);
   if (j) j[field] = value;
 }
+async function setGrandTotal(id, val) {
+  const num = val === '' ? null : parseFloat(val);
+  if (val !== '' && isNaN(num)) { alert('Please enter a number.'); return; }
+  const { error } = await db.from('jobs').update({ repair_grand_total: num, updated_at: new Date().toISOString() }).eq('id', id);
+  if (error) {
+    alert('Error saving: ' + error.message + '\n\nIf it says the column doesn\'t exist, run this once in Supabase SQL Editor:\nalter table jobs add column if not exists repair_grand_total numeric;');
+    return;
+  }
+  const j = jobs.find(x => x.id === id);
+  if (j) {
+    j.repair_grand_total = num;
+    logEvent(j, 'money', num != null ? 'Repair grand total set to £' + num.toFixed(2) : 'Repair grand total cleared', false);
+  }
+  renderJobs();
+  if (document.getElementById('gary-view').style.display === 'block') renderGary();
+  if (detailJobId === id && document.getElementById('detail-modal').classList.contains('open')) renderDetail();
+}
 // ─── JOB DETAIL SHEET ─────────────────────────────────────
 async function openDetail(id) {
   detailJobId = id;
@@ -946,6 +974,7 @@ function renderDetail() {
   if (sd[ON_SITE_STAGE]) chips.push(`<span class="chip">On site <strong>${fmtShortISO(sd[ON_SITE_STAGE])}</strong></span>`);
   chips.push(j.auth_confirmed ? `<span class="chip" style="background:var(--green-light);border-color:#5CB87A;color:#0F6E56">✓ Authorised</span>` : `<span class="chip" style="background:var(--amber-light);border-color:#E8C48A;color:var(--amber)">Awaiting auth</span>`);
   chips.push(j.is_estimated ? `<span class="chip" style="background:var(--green-light);border-color:#5CB87A;color:#0F6E56">✓ Estimated</span>` : `<span class="chip">Not estimated</span>`);
+  if (j.repair_grand_total != null) chips.push(`<span class="chip">💷 Total <strong>£${Number(j.repair_grand_total).toFixed(2)}</strong></span>`);
   if (sd[IN_REPAIR_STAGE]) chips.push(`<span class="chip">In repair <strong>${fmtShortISO(sd[IN_REPAIR_STAGE])}</strong></span>`);
   if (sd[INVOICED_STAGE]) chips.push(`<span class="chip">Invoiced <strong>${fmtShortISO(sd[INVOICED_STAGE])}</strong></span>`);
   if (j.repair_day) chips.push(`<span class="chip">🗓 Booked <strong>${fmtWeekISO(j.repair_day)}</strong></span>`);
@@ -954,6 +983,7 @@ function renderDetail() {
   let body = '';
   if (detailTab === 'timeline') body = buildTimeline(j, sd);
   else if (detailTab === 'checklist') body = buildChecklist(j);
+  else if (detailTab === 'costs') body = buildCosts(j);
   else if (detailTab === 'notes') body = buildNotes(j);
   else if (detailTab === 'parts') body = buildParts(j);
   else if (detailTab === 'photos') body = buildPhotos(j);
@@ -978,6 +1008,7 @@ function renderDetail() {
     <div class="dtabs">
       ${tabBtn('timeline', '📋 Timeline')}
       ${tabBtn('checklist', '✅ Checklist')}
+      ${tabBtn('costs', '💷 Costs')}
       ${tabBtn('notes', '📝 Notes' + (detailNotes.length ? ' (' + detailNotes.length + ')' : ''))}
       ${tabBtn('parts', '🔩 Parts' + (detailParts.length ? ' (' + detailParts.length + ')' : ''))}
       ${tabBtn('photos', '📷 Photos' + (detailPhotos.length ? ' (' + detailPhotos.length + ')' : ''))}
@@ -1045,6 +1076,29 @@ function buildChecklist(j) {
     <div class="check-grid">
       <label class="chk ${j.needs_supplementary?'on':''}"><input type="checkbox" ${j.needs_supplementary?'checked':''} onchange="setFlag('${j.id}','needs_supplementary',this.checked)"> Needs a supplementary</label>
       ${j.needs_supplementary ? `<label class="chk sub-chk ${j.supplementary_sent?'on':''}"><input type="checkbox" ${j.supplementary_sent?'checked':''} onchange="setFlag('${j.id}','supplementary_sent',this.checked)"> Supplementary sent</label>` : ''}
+    </div>`;
+}
+// — Costs tab: full invoice breakdown (auto-filled by the email workflow) —
+function buildCosts(j) {
+  const rows = [
+    ['Labour', j.labour_cost], ['Parts', j.parts_cost],
+    ['Paint & materials', j.paint_cost], ['Specialist', j.specialist_cost],
+    ['Sub total', j.sub_total], ['VAT', j.vat_total],
+    ['Grand total', j.repair_grand_total],
+  ].filter(r => r[1] != null);
+  const breakdown = rows.length
+    ? `<div class="detail-refs" style="font-size:13px">` +
+      rows.map(r => `<div style="display:flex;justify-content:space-between;padding:3px 0;${/total/i.test(r[0]) ? 'font-weight:600;border-top:1px solid var(--border);margin-top:2px;padding-top:6px;' : ''}"><span>${r[0]}</span><span>${fmtGBP(r[1])}</span></div>`).join('') +
+      `</div>`
+    : '<div style="font-size:12px;color:var(--muted);padding:8px 2px">No invoice figures yet — they fill in automatically when the authority email is processed. You can enter a grand total manually below.</div>';
+  return `
+    ${breakdown}
+    <div class="section-label">Grand total (manual override)</div>
+    <div class="chk" style="cursor:default;max-width:280px">
+      <span style="white-space:nowrap">£</span>
+      <input type="number" step="0.01" min="0" placeholder="0.00" value="${j.repair_grand_total != null ? Number(j.repair_grand_total).toFixed(2) : ''}"
+        onchange="setGrandTotal('${j.id}', this.value)"
+        style="flex:1;min-width:80px;font-size:13px;font-family:inherit;padding:4px 8px;border:1px solid var(--border-strong);border-radius:6px;background:var(--card)">
     </div>`;
 }
 // — Notes tab: timestamped notes —
@@ -1259,7 +1313,7 @@ function garyCard(j) {
     <div class="progress-track">${pips}</div>
     <div class="progress-label">
       <span><strong>${STAGES[j.stage]?.label || '—'}</strong></span>
-      <span style="font-family:'DM Mono',monospace">${j.invoice_number ? 'INV ' + escHtml(j.invoice_number) + ' · ' : ''}REF ${escHtml(j.acg_ref) || '—'}</span>
+      <span style="font-family:'DM Mono',monospace">${j.invoice_number ? 'INV ' + escHtml(j.invoice_number) + ' · ' : ''}REF ${escHtml(j.acg_ref) || '—'}${j.repair_grand_total != null ? ' · £' + Number(j.repair_grand_total).toFixed(2) : ''}</span>
     </div>
     ${j.damage ? `<div class="damage-body open" style="margin-top:6px">${escHtml(j.damage)}</div>` : ''}
   </div>`;
@@ -1312,6 +1366,7 @@ function calTile(j) {
     <div class="cal-name">${escHtml(j.name) || '—'} ${ready ? '<span class="ready-dot" title="Ready to start"></span>' : ''}</div>
     <div class="cal-vehicle">${escHtml(j.vehicle) || ''}</div>
     <div class="cal-stage">${STAGES[j.stage]?.label || ''}</div>
+    ${j.repair_grand_total != null ? `<div class="cal-total">${fmtGBP(j.repair_grand_total)}</div>` : ''}
     <select class="cal-move" onclick="event.stopPropagation()" onchange="setDay('${j.id}', this.value)">${dayOpts(j)}</select>
   </div>`;
 }
@@ -1336,6 +1391,28 @@ function renderWeek() {
   if (intro) intro.innerHTML = weekJobs.length
     ? `<strong>${weekJobs.length}</strong> job${weekJobs.length === 1 ? '' : 's'} this week · <strong>${readyCount}</strong> ready to start <span class="ready-dot" style="vertical-align:middle"></span> · click a job for details & checklist`
     : '';
+  // Week money totals — adds up every job scheduled into this week
+  let totalsBar = '';
+  if (weekJobs.length) {
+    const sum = f => weekJobs.reduce((s, j) => s + (Number(j[f]) || 0), 0);
+    const t = {
+      labour: sum('labour_cost'), parts: sum('parts_cost'), paint: sum('paint_cost'),
+      specialist: sum('specialist_cost'), sub: sum('sub_total'), vat: sum('vat_total'),
+      grand: sum('repair_grand_total')
+    };
+    if (t.grand > 0 || t.sub > 0) {
+      const item = (lbl, val, cls) => `<div class="wt-item${cls ? ' ' + cls : ''}"><div class="wt-val">${fmtGBP(val)}</div><div class="wt-lbl">${lbl}</div></div>`;
+      totalsBar = `<div class="week-totals">
+        ${item('Labour', t.labour)}
+        ${item('Parts', t.parts)}
+        ${item('Paint & materials', t.paint)}
+        ${item('Specialist', t.specialist)}
+        ${item('Sub total', t.sub)}
+        ${item('VAT', t.vat)}
+        ${item('Week grand total', t.grand, 'wt-grand')}
+      </div>`;
+    }
+  }
   const unassigned = weekJobs.filter(j => !j.repair_day);
   const todayIso = todayISO();
   const dayCols = [];
@@ -1351,7 +1428,7 @@ function renderWeek() {
       ${dayJobs.length ? dayJobs.map(calTile).join('') : '<div class="cal-empty">—</div>'}
     </div>`);
   }
-  let html = '';
+  let html = totalsBar;
   if (unassigned.length) {
     html += `<div class="section-label">In this week, not booked to a day yet — pick a day on each card</div>
       <div class="cal-unassigned">${unassigned.map(calTile).join('')}</div>`;
