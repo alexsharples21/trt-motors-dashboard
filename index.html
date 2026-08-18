@@ -66,6 +66,8 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .job-card:hover { border-color: var(--border-strong); transform: translateY(-1px); }
 .job-card.stage-new { background: #E8F8EE; border-color: #A8DDB8; }
 .job-card.stage-new:hover { border-color: #5CB87A; }
+.job-card.stage-ready { background: #F1EDFF; border-color: #B7A8F0; }
+.job-card.stage-ready:hover { border-color: #7B5CE0; }
 .job-card.stage-progress { background: #FFF3E0; border-color: #FFB74D; }
 .job-card.stage-progress:hover { border-color: #FF9800; }
 .job-card.stage-invoiced { background: #E6F1FB; border-color: #90BEE8; }
@@ -225,6 +227,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .cal-tile { border: 1.5px solid var(--border-strong); border-radius: 8px; padding: 8px; margin-bottom: 8px; cursor: pointer; transition: all 0.15s; background: var(--card); }
 .cal-tile:hover { transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.12); border-color: var(--blue); }
 .cal-tile.t-new { background: #E8F8EE; border-color: #A8DDB8; }
+.cal-tile.t-ready { background: #F1EDFF; border-color: #B7A8F0; }
 .cal-tile.t-prog { background: #FFF3E0; border-color: #FFB74D; }
 .cal-tile.t-rep { background: #E6F1FB; border-color: #90BEE8; }
 .cal-tile.t-inv { background: var(--green-light); border-color: #5CB87A; }
@@ -580,6 +583,7 @@ const PHOTO_BUCKET = 'job-photos';
 // ─── STAGES ("Estimated" is now a tick-box, not a stage) ─
 const STAGES = [
   { label: 'New instruction',        sub: 'Job instruction received from ACG' },
+  { label: 'Ready for collection',   sub: 'Arranging collection of your vehicle' },
   { label: 'On site',                sub: 'Vehicle collected and with us' },
   { label: 'In repair',              sub: 'Repair work underway' },
   { label: 'Collection / Delivery',  sub: 'Arranging vehicle return to customer' },
@@ -587,6 +591,7 @@ const STAGES = [
   { label: 'Invoiced',               sub: 'Invoice submitted to ACG' },
   { label: 'Complete',               sub: 'Repair finished — all done' },
 ];
+const READY_COLLECT_STAGE = STAGES.findIndex(s => s.label === 'Ready for collection');
 const ON_SITE_STAGE  = STAGES.findIndex(s => s.label === 'On site');
 const IN_REPAIR_STAGE = STAGES.findIndex(s => s.label === 'In repair');
 const INVOICED_STAGE = STAGES.findIndex(s => s.label === 'Invoiced');
@@ -732,7 +737,7 @@ async function refreshJobs() {
   renderJobs();
   if (document.getElementById('week-view').style.display === 'block') renderWeek();
   if (document.getElementById('gary-view').style.display === 'block') renderGary();
-  if (document.getElementById('recovery-view').style.display === 'block') loadRecovery(true);
+  loadRecovery(true);   // recovery data also feeds the 🚚 tags on dashboard job cards
   if (detailJobId && document.getElementById('detail-modal').classList.contains('open')) renderDetail();
   loadEvents();
 }
@@ -887,6 +892,12 @@ function renderJobs() {
     const tags = [];
     if (j.auth_confirmed) tags.push(`<span class="tag tag-auth">✓ Authorised</span>`);
     else tags.push(`<span class="tag tag-no-auth">Awaiting auth</span>`);
+    if (j.stage === READY_COLLECT_STAGE) {
+      const plate = (j.reg || '').replace(/\s/g, '').toUpperCase();
+      const hasRec = recJobs.some(r => r.status !== 'cancelled' && r.job_type === 'collection' &&
+        (r.job_id === j.id || (plate && (r.reg || '').replace(/\s/g, '').toUpperCase() === plate)));
+      tags.push(hasRec ? `<span class="tag tag-auth">🚚 Collection booked</span>` : `<span class="tag tag-no-auth">🚚 Collection not booked yet</span>`);
+    }
     if (j.repair_grand_total != null) tags.push(`<span class="tag tag-money">${fmtGBP(j.repair_grand_total)}</span>`);
     if (j.is_estimated) tags.push(`<span class="tag tag-est">✓ Estimated</span>`);
     if (j.has_supplementary) {
@@ -903,7 +914,7 @@ function renderJobs() {
     const opts = STAGES.map((s, i) => `<option value="${i}" ${j.stage===i?'selected':''}>${s.label}</option>`).join('');
     const trackerUrl = `${SITE_URL}/track/${(j.reg||'').replace(/\s/g,'')}`;
     return `
-    <div class="job-card${j.stage === 0 ? ' stage-new' : (j.stage >= ON_SITE_STAGE && j.stage < IN_REPAIR_STAGE) ? ' stage-progress' : j.stage === INVOICED_STAGE ? ' stage-invoiced' : ''}">
+    <div class="job-card${j.stage === 0 ? ' stage-new' : j.stage === READY_COLLECT_STAGE ? ' stage-ready' : (j.stage >= ON_SITE_STAGE && j.stage < IN_REPAIR_STAGE) ? ' stage-progress' : j.stage === INVOICED_STAGE ? ' stage-invoiced' : ''}">
       <div class="job-header clickable" onclick="openDetail('${j.id}')" title="Open job details">
         <span class="reg-plate">${j.reg || '—'}</span>
         <div class="job-info">
@@ -1471,7 +1482,7 @@ function garyCard(j) {
   if (j.repair_day) tags.push(`<span class="tag tag-week">🗓 ${fmtWeekISO(j.repair_day)}</span>`);
   else if (j.repair_week_start) tags.push(`<span class="tag tag-week">🗓 Wk ${fmtShortISO(j.repair_week_start)}</span>`);
   return `
-  <div class="job-card${j.stage === 0 ? ' stage-new' : (j.stage >= ON_SITE_STAGE && j.stage < IN_REPAIR_STAGE) ? ' stage-progress' : ''}">
+  <div class="job-card${j.stage === 0 ? ' stage-new' : j.stage === READY_COLLECT_STAGE ? ' stage-ready' : (j.stage >= ON_SITE_STAGE && j.stage < IN_REPAIR_STAGE) ? ' stage-progress' : ''}">
     <div class="job-header clickable" onclick="openDetail('${j.id}')" title="Open job details">
       <span class="reg-plate">${j.reg || '—'}</span>
       <div class="job-info">
@@ -1529,6 +1540,7 @@ function dayOpts(j) {
 function calTile(j) {
   const ready = readyToStart(j);
   const cls = j.stage === 0 ? 't-new'
+            : j.stage === READY_COLLECT_STAGE ? 't-ready'
             : j.stage < IN_REPAIR_STAGE ? 't-prog'
             : j.stage >= INVOICED_STAGE ? 't-inv'
             : 't-rep';
@@ -1729,6 +1741,8 @@ async function loadRecovery(silent) {
   // quietly geocode any jobs that are missing coordinates
   recJobs.filter(j => needsGeocode(j)).slice(0, 4).forEach(j => geocodeRecJob(j));
   renderRecovery();
+  // refresh the 🚚 booking tags on the main dashboard now recovery data is in
+  if (document.getElementById('admin-view').style.display === 'block' && !uiBusy()) renderJobs();
 }
 function renderRecovery() {
   renderRecCal();
