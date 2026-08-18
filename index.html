@@ -305,6 +305,23 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .driver-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; border: 1.5px solid rgba(0,0,0,0.15); }
 .rec-nodriver { color: var(--red); font-size: 10px; font-weight: 600; margin-top: 4px; }
 .rec-note-flag { font-size: 10px; color: var(--muted); margin-top: 3px; }
+.rec-queues { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+.rec-queue { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
+.rec-queue.q-coll { border-top: 3px solid #FFB74D; }
+.rec-queue.q-del { border-top: 3px solid #5CB87A; }
+.rec-queue-title { font-size: 12px; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.rec-queue-title .q-count { font-size: 11px; background: var(--bg); border: 1px solid var(--border); border-radius: 20px; padding: 1px 8px; color: var(--muted); }
+.rec-queue-empty { font-size: 12px; color: var(--faint); padding: 4px 0; }
+.rec-queue-item { display: flex; align-items: center; gap: 8px; border: 1.5px solid var(--border-strong); border-radius: 8px; padding: 7px 10px; margin-bottom: 6px; cursor: pointer; transition: all 0.15s; background: var(--card); }
+.rec-queue-item:hover { transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.12); border-color: var(--blue); }
+.q-coll .rec-queue-item { background: #FFF9F0; border-color: #FFD59B; }
+.q-del .rec-queue-item { background: #F2FBF5; border-color: #A8DDB8; }
+.rec-queue-item .cal-reg { margin-bottom: 0; }
+.rec-queue-info { flex: 1; min-width: 0; }
+.rec-queue-name { font-size: 12px; font-weight: 600; line-height: 1.3; }
+.rec-queue-addr { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rec-queue-go { font-size: 11px; font-weight: 600; color: var(--blue); white-space: nowrap; }
+@media (max-width: 800px) { .rec-queues { grid-template-columns: 1fr; } }
 #rec-map { height: 560px; border-radius: var(--radius); border: 1px solid var(--border-strong); z-index: 1; }
 .map-layout { display: grid; grid-template-columns: 300px 1fr; gap: 14px; align-items: start; }
 .map-side { display: flex; flex-direction: column; gap: 10px; }
@@ -459,6 +476,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
     </div>
     <!-- CALENDAR TAB -->
     <div id="rec-cal-tab">
+      <div id="rec-queues"></div>
       <div class="week-nav">
         <button class="btn" onclick="navRecWeek(-1)">←</button>
         <div class="week-nav-label" id="rec-week-label"></div>
@@ -592,6 +610,7 @@ const STAGES = [
   { label: 'Complete',               sub: 'Repair finished — all done' },
 ];
 const READY_COLLECT_STAGE = STAGES.findIndex(s => s.label === 'Ready for collection');
+const COLL_DELIVERY_STAGE = STAGES.findIndex(s => s.label === 'Collection / Delivery');
 const ON_SITE_STAGE  = STAGES.findIndex(s => s.label === 'On site');
 const IN_REPAIR_STAGE = STAGES.findIndex(s => s.label === 'In repair');
 const INVOICED_STAGE = STAGES.findIndex(s => s.label === 'Invoiced');
@@ -1744,7 +1763,48 @@ async function loadRecovery(silent) {
   // refresh the 🚚 booking tags on the main dashboard now recovery data is in
   if (document.getElementById('admin-view').style.display === 'block' && !uiBusy()) renderJobs();
 }
+// does this repair job already have a live recovery of the given type?
+function jobHasRecovery(j, type) {
+  const plate = (j.reg || '').replace(/\s/g, '').toUpperCase();
+  return recJobs.some(r => r.status !== 'cancelled' && r.job_type === type &&
+    (r.job_id === j.id || (plate && (r.reg || '').replace(/\s/g, '').toUpperCase() === plate)));
+}
+function recQueueItem(j, type) {
+  return `<div class="rec-queue-item" onclick="queueBook('${j.id}', '${type}')" title="Book this ${type} into the diary">
+    <span class="cal-reg">${escHtml(j.reg) || '—'}</span>
+    <div class="rec-queue-info">
+      <div class="rec-queue-name">${escHtml(j.name) || '—'}</div>
+      <div class="rec-queue-addr">${escHtml(j.address) || 'No address on the job'}</div>
+    </div>
+    <span class="rec-queue-go">+ Book →</span>
+  </div>`;
+}
+function renderRecQueues() {
+  const el = document.getElementById('rec-queues');
+  if (!el) return;
+  if (!recOk) { el.innerHTML = ''; return; }
+  const needColl = jobs.filter(j => j.stage === READY_COLLECT_STAGE && !jobHasRecovery(j, 'collection'));
+  const needDel  = jobs.filter(j => j.stage === COLL_DELIVERY_STAGE && !jobHasRecovery(j, 'delivery'));
+  el.innerHTML = `<div class="rec-queues">
+    <div class="rec-queue q-coll">
+      <div class="rec-queue-title">🚛 Waiting to be collected <span class="q-count">${needColl.length}</span></div>
+      ${needColl.length ? needColl.map(j => recQueueItem(j, 'collection')).join('')
+        : '<div class="rec-queue-empty">Nothing waiting — jobs at "Ready for collection" with no collection booked appear here.</div>'}
+    </div>
+    <div class="rec-queue q-del">
+      <div class="rec-queue-title">📦 Ready to go back <span class="q-count">${needDel.length}</span></div>
+      ${needDel.length ? needDel.map(j => recQueueItem(j, 'delivery')).join('')
+        : '<div class="rec-queue-empty">Nothing waiting — jobs at "Collection / Delivery" with no delivery booked appear here.</div>'}
+    </div>
+  </div>`;
+}
+function queueBook(jobId, type) {
+  openRecModal(null, jobId);
+  document.getElementById('r-type').value = type;
+  updateRecAddressRows();
+}
 function renderRecovery() {
+  renderRecQueues();
   renderRecCal();
   populateRecMapDriverFilter();
   if (recTab === 'map') renderRecMap();
