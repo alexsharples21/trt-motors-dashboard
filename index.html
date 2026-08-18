@@ -314,6 +314,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .map-warn { font-size: 10px; color: var(--red); }
 .rec-marker { display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:11px; font-family:'DM Sans',sans-serif; border-radius:50% 50% 50% 0; transform: rotate(-45deg); border: 2px solid rgba(255,255,255,0.9); box-shadow: 0 2px 5px rgba(0,0,0,0.35); }
 .rec-marker span { transform: rotate(45deg); }
+.base-marker { display:flex; align-items:center; justify-content:center; font-size:13px; background:#fff; border:2px solid #444; border-radius:6px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
 .driver-row { display: flex; align-items: center; gap: 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; margin-bottom: 6px; font-size: 13px; }
 .driver-row .kind-tag { font-size: 10px; padding: 1px 8px; border-radius: 10px; background: #EDEBFF; color: #3B2DA3; font-weight: 600; }
 @media (max-width: 1100px) { .rec-grid { grid-template-columns: repeat(2, 1fr); } .rec-day { min-height: 0; } }
@@ -2191,6 +2192,14 @@ function recMarkerIcon(color, label) {
     iconAnchor: [14, 28],
   });
 }
+function baseMarkerIcon() {
+  return L.divIcon({
+    className: '',
+    html: `<div class="base-marker" style="width:26px;height:26px">🏠</div>`,
+    iconSize: [26, 26],
+    iconAnchor: [13, 13],
+  });
+}
 // Order a driver's day: earliest first, but any job linked with "follows on
 // from" slots in directly after its predecessor, however its time is set.
 function orderDriverJobs(jobsArr) {
@@ -2242,6 +2251,7 @@ async function renderRecMap() {
     byDriver[k].jobs.push(r);
   });
   const allBounds = [];
+  const basesPlaced = {};   // one 🏠 pin per base, however many jobs touch it
   let sideHtml = '';
   for (const g of groups) {
     const color = g.driver ? driverColor(g.driver) : '#888888';
@@ -2278,20 +2288,27 @@ async function renderRecMap() {
         route.coords.forEach(c => allBounds.push(c));
         if (route.km != null) legInfo = ` · ${(route.km * 0.621371).toFixed(0)} mi, ~${Math.round(route.mins)} min`;
       }
-      if (hasPickup) {
+      // Only customer addresses get numbers — bases just get one 🏠 pin each.
+      const placeStop = (lat, lng, addr, kind) => {
+        const b = baseFromAddress(addr);
+        if (b) {
+          if (!basesPlaced[b.key]) {
+            basesPlaced[b.key] = true;
+            const m = L.marker([lat, lng], { icon: baseMarkerIcon(), zIndexOffset: -100 }).addTo(recMap);
+            m.bindPopup(`<strong>${escHtml(b.name)}</strong><br>${escHtml(b.addr)}`);
+            recMapLayers.push(m);
+          }
+          allBounds.push([lat, lng]);
+          return;
+        }
         stopNo++;
-        const m = L.marker([r.pickup_lat, r.pickup_lng], { icon: recMarkerIcon(color, stopNo) }).addTo(recMap);
-        m.bindPopup(`<strong>Stop ${stopNo} — pick up</strong> (${recTypeLabel(r.job_type)})<br>${escHtml(r.pickup_address || '')}${r.reg ? '<br>Reg: ' + escHtml(r.reg) : ''}${r.scheduled_time ? '<br>' + fmtRecTime(r.scheduled_time) : ''}`);
+        const m = L.marker([lat, lng], { icon: recMarkerIcon(color, stopNo) }).addTo(recMap);
+        m.bindPopup(`<strong>Stop ${stopNo} — ${kind}</strong> (${recTypeLabel(r.job_type)})<br>${escHtml(addr || '')}${r.reg ? '<br>Reg: ' + escHtml(r.reg) : ''}${r.scheduled_time ? '<br>' + fmtRecTime(r.scheduled_time) : ''}`);
         recMapLayers.push(m);
-        allBounds.push([r.pickup_lat, r.pickup_lng]);
-      }
-      if (hasDrop) {
-        stopNo++;
-        const m = L.marker([r.dropoff_lat, r.dropoff_lng], { icon: recMarkerIcon(color, stopNo) }).addTo(recMap);
-        m.bindPopup(`<strong>Stop ${stopNo} — drop off</strong> (${recTypeLabel(r.job_type)})<br>${escHtml(r.dropoff_address || '')}${r.reg ? '<br>Reg: ' + escHtml(r.reg) : ''}`);
-        recMapLayers.push(m);
-        allBounds.push([r.dropoff_lat, r.dropoff_lng]);
-      }
+        allBounds.push([lat, lng]);
+      };
+      if (hasPickup) placeStop(r.pickup_lat, r.pickup_lng, r.pickup_address, 'pick up');
+      if (hasDrop) placeStop(r.dropoff_lat, r.dropoff_lng, r.dropoff_address, 'drop off');
       const warn = (!hasPickup || !hasDrop) ? ` <span class="map-warn">⚠ address not located yet</span>` : '';
       const linkNote = linked ? `<div style="font-size:10px;color:var(--muted);padding-left:20px">↳ straight on from ${escHtml(prev.reg || shortAddr(prev.dropoff_address))} — no return to base</div>` : '';
       legsHtml += linkNote + `<div class="map-leg" onclick="focusRecLeg('${r.id}')"><span class="leg-no" style="border-color:${color};color:${color}">${g.jobs.indexOf(r) + 1}</span>${r.scheduled_time ? '<strong>' + fmtRecTime(r.scheduled_time) + '</strong> · ' : ''}${recTypeLabel(r.job_type)}: <strong>${escHtml(shortAddr(r.pickup_address))}</strong> → <strong>${escHtml(shortAddr(r.dropoff_address))}</strong>${legInfo}${warn}</div>`;
