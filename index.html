@@ -237,6 +237,8 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .cal-stage { font-size: 10px; font-weight: 600; color: var(--blue); margin-top: 3px; display: flex; align-items: center; gap: 4px; }
 .ready-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); display: inline-block; }
 .cal-move { width: 100%; margin-top: 6px; font-size: 10px; padding: 3px 4px; border: 1px solid var(--border); border-radius: 5px; font-family: inherit; background: rgba(255,255,255,0.7); cursor: pointer; color: var(--muted); }
+.cal-tags { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 5px; }
+.cal-tags .tag { font-size: 9px; padding: 1px 6px; }
 .cal-empty { font-size: 11px; color: var(--faint); text-align: center; padding: 16px 4px; }
 .cal-unassigned { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; margin-bottom: 16px; }
 .ready-badge { font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 600; background: var(--green-light); color: #0F6E56; }
@@ -1556,6 +1558,25 @@ function dayOpts(j) {
   o += `<option value="__remove">✕ Remove from this week</option>`;
   return o;
 }
+// status flags shown on every repair-schedule tile without opening the job
+function calStatusTags(j) {
+  const t = [];
+  t.push(j.auth_confirmed ? '<span class="tag tag-auth">✓ Authorised</span>' : '<span class="tag tag-no-auth">Awaiting auth</span>');
+  t.push(j.is_estimated ? '<span class="tag tag-est">✓ Estimated</span>' : '<span class="tag tag-no-auth">Not estimated</span>');
+  if (j.has_supplementary) {
+    let lbl = 'Suppl. authorised';
+    if (j.latest_supplementary_date) {
+      const [y, m, d] = String(j.latest_supplementary_date).split('-');
+      lbl = 'Suppl. authorised ' + d + '/' + m;
+    }
+    t.push('<span class="tag tag-inv">✓ ' + lbl + '</span>');
+  } else if (j.needs_supplementary && j.supplementary_sent) {
+    t.push('<span class="tag tag-supp">Waiting on supplementary</span>');
+  } else if (j.needs_supplementary) {
+    t.push('<span class="tag tag-no-auth">Supplementary not sent</span>');
+  }
+  return '<div class="cal-tags">' + t.join('') + '</div>';
+}
 function calTile(j) {
   const ready = readyToStart(j);
   const cls = j.stage === 0 ? 't-new'
@@ -1568,6 +1589,7 @@ function calTile(j) {
     <div class="cal-name">${escHtml(j.name) || '—'} ${ready ? '<span class="ready-dot" title="Ready to start"></span>' : ''}</div>
     <div class="cal-vehicle">${escHtml(j.vehicle) || ''}</div>
     <div class="cal-stage">${STAGES[j.stage]?.label || ''}</div>
+    ${calStatusTags(j)}
     ${j.repair_grand_total != null ? `<div class="cal-total">${fmtGBP(j.repair_grand_total)}</div>` : ''}
     <select class="cal-move" onclick="event.stopPropagation()" onchange="setDay('${j.id}', this.value)">${dayOpts(j)}</select>
   </div>`;
