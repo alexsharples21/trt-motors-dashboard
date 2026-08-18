@@ -6,6 +6,8 @@
 <title>TRT Motors</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
 :root {
   --blue: #1a1aff;
@@ -278,6 +280,45 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .tracker-contact strong { color: var(--text); }
 .tracker-not-found { text-align: center; padding: 3rem 1rem; }
 .tracker-not-found h2 { font-size: 18px; margin-bottom: 8px; }
+/* VEHICLE RECOVERY */
+#recovery-view { display: none; }
+.rec-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; align-items: start; }
+.rec-day { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px; min-height: 160px; }
+.rec-day.today { border-color: var(--blue); box-shadow: 0 0 0 2px rgba(26,26,255,0.12); }
+.rec-day.weekend { background: #faf9f6; }
+.rec-tile { border: 1.5px solid var(--border-strong); border-radius: 8px; padding: 7px 8px; margin-bottom: 7px; cursor: pointer; transition: all 0.15s; background: var(--card); }
+.rec-tile:hover { transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.12); border-color: var(--blue); }
+.rec-tile.r-coll { background: #FFF3E0; border-color: #FFB74D; }
+.rec-tile.r-del { background: #E8F8EE; border-color: #A8DDB8; }
+.rec-tile.r-done { opacity: 0.55; }
+.rec-tile.r-cancelled { opacity: 0.45; text-decoration: line-through; }
+.rec-time { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 600; }
+.rec-type { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 1px 6px; border-radius: 10px; }
+.rec-type.coll { background: var(--amber-light); color: var(--amber); }
+.rec-type.del { background: var(--green-light); color: #0F6E56; }
+.rec-route { font-size: 10px; color: var(--muted); margin-top: 3px; line-height: 1.35; }
+.rec-route strong { color: var(--text); }
+.rec-driver-row { display: flex; align-items: center; gap: 5px; margin-top: 4px; font-size: 10px; font-weight: 600; }
+.driver-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; border: 1.5px solid rgba(0,0,0,0.15); }
+.rec-nodriver { color: var(--red); font-size: 10px; font-weight: 600; margin-top: 4px; }
+.rec-note-flag { font-size: 10px; color: var(--muted); margin-top: 3px; }
+#rec-map { height: 560px; border-radius: var(--radius); border: 1px solid var(--border-strong); z-index: 1; }
+.map-layout { display: grid; grid-template-columns: 300px 1fr; gap: 14px; align-items: start; }
+.map-side { display: flex; flex-direction: column; gap: 10px; }
+.map-driver-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; border-left: 4px solid var(--border-strong); }
+.map-driver-name { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.map-leg { font-size: 11px; color: var(--muted); padding: 5px 0 5px 20px; position: relative; line-height: 1.4; cursor: pointer; }
+.map-leg:hover { color: var(--text); }
+.map-leg .leg-no { position: absolute; left: 0; top: 5px; width: 15px; height: 15px; border-radius: 50%; background: var(--bg); border: 1px solid var(--border-strong); font-size: 9px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+.map-leg strong { color: var(--text); }
+.map-warn { font-size: 10px; color: var(--red); }
+.rec-marker { display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:11px; font-family:'DM Sans',sans-serif; border-radius:50% 50% 50% 0; transform: rotate(-45deg); border: 2px solid rgba(255,255,255,0.9); box-shadow: 0 2px 5px rgba(0,0,0,0.35); }
+.rec-marker span { transform: rotate(45deg); }
+.driver-row { display: flex; align-items: center; gap: 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; margin-bottom: 6px; font-size: 13px; }
+.driver-row .kind-tag { font-size: 10px; padding: 1px 8px; border-radius: 10px; background: #EDEBFF; color: #3B2DA3; font-weight: 600; }
+@media (max-width: 1100px) { .rec-grid { grid-template-columns: repeat(2, 1fr); } .rec-day { min-height: 0; } }
+@media (max-width: 900px) { .map-layout { grid-template-columns: 1fr; } #rec-map { height: 420px; } }
+@media (max-width: 640px) { .rec-grid { grid-template-columns: 1fr; } }
 @media (max-width: 900px) {
   .cal-grid { grid-template-columns: 1fr; }
   .cal-day { min-height: 0; }
@@ -301,6 +342,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
     <div style="display:flex;gap:8px;align-items:center">
       <span style="color:rgba(255,255,255,0.7);font-size:11px"><span class="live-dot"></span>Live</span>
       <button class="btn-header" onclick="showWeek()">📅 Repair schedule</button>
+      <button class="btn-header" onclick="showRecovery()">🚚 Recovery</button>
       <button class="btn-header" onclick="showGary()">👤 Gary</button>
       <button class="btn-header" onclick="openModal('add-modal')">+ Add job</button>
       <a class="btn-header" href="https://web-production-eb7dd.up.railway.app/manual-invoice" target="_blank" rel="noopener" style="text-decoration:none">+ New invoice</a>
@@ -393,6 +435,113 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
     <div id="tracker-content"></div>
   </div>
 </div>
+<!-- ═══════════════════════════════════════════════ -->
+<!-- VEHICLE RECOVERY                                 -->
+<!-- ═══════════════════════════════════════════════ -->
+<div id="recovery-view">
+  <header class="header">
+    <div class="header-logo">TRT Motors — Vehicle recovery</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn-header" onclick="showDash()">← Dashboard</button>
+      <button class="btn-header" onclick="openDriversModal()">⚙ Drivers</button>
+      <button class="btn-header" onclick="openRecModal()">+ Book recovery</button>
+      <button class="btn-header" onclick="loadRecovery()">↻ Refresh</button>
+    </div>
+  </header>
+  <div class="container wide">
+    <div class="tabs">
+      <button class="tab-btn active" id="rt-cal" onclick="setRecTab('cal')">📅 Calendar</button>
+      <button class="tab-btn" id="rt-map" onclick="setRecTab('map')">🗺 Route map</button>
+    </div>
+    <!-- CALENDAR TAB -->
+    <div id="rec-cal-tab">
+      <div class="week-nav">
+        <button class="btn" onclick="navRecWeek(-1)">←</button>
+        <div class="week-nav-label" id="rec-week-label"></div>
+        <button class="btn" onclick="navRecWeek(1)">→</button>
+        <button class="btn" onclick="goRecThisWeek()">Today</button>
+      </div>
+      <div class="week-intro" id="rec-intro"></div>
+      <div id="rec-cal-body"></div>
+    </div>
+    <!-- MAP TAB -->
+    <div id="rec-map-tab" style="display:none">
+      <div class="toolbar">
+        <input type="date" class="filter-select" id="rec-map-date" onchange="renderRecMap()">
+        <select class="filter-select" id="rec-map-driver" onchange="renderRecMap()">
+          <option value="">All drivers</option>
+        </select>
+        <span style="flex:1"></span>
+        <span style="font-size:11px;color:var(--muted);align-self:center">Routes follow real roads (OSRM · OpenStreetMap)</span>
+      </div>
+      <div class="map-layout">
+        <div class="map-side" id="rec-map-side"></div>
+        <div id="rec-map"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- RECOVERY DETAIL SHEET -->
+<div class="detail-overlay" id="rec-detail-modal" onclick="closeRecDetail(event)">
+  <div class="detail-sheet">
+    <div class="detail-handle"></div>
+    <div id="rec-detail-content"></div>
+  </div>
+</div>
+<!-- BOOK / EDIT RECOVERY MODAL -->
+<div class="modal-overlay" id="rec-modal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-title" id="rec-modal-title">Book a recovery</div>
+    <div class="form-row"><label>Link to a repair job (optional — fills in the details)</label>
+      <select id="r-job" onchange="recPrefillFromJob(this.value)"><option value="">— Not linked —</option></select>
+    </div>
+    <div class="form-grid">
+      <div class="form-row"><label>Type</label>
+        <select id="r-type">
+          <option value="collection">🚛 Collection (bring vehicle in)</option>
+          <option value="delivery">📦 Delivery (take vehicle out)</option>
+        </select>
+      </div>
+      <div class="form-row"><label>Driver / company</label><select id="r-driver"><option value="">— Unallocated —</option></select></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-row"><label>Date</label><input type="date" id="r-date"></div>
+      <div class="form-row"><label>Time</label><input type="time" id="r-time"></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-row"><label>Customer</label><input id="r-name" placeholder="Mrs Jane Smith"></div>
+      <div class="form-row"><label>Registration</label><input id="r-reg" placeholder="AB12 CDE" style="text-transform:uppercase"></div>
+    </div>
+    <div class="form-row"><label>Vehicle</label><input id="r-vehicle" placeholder="Ford Focus 1.0"></div>
+    <div class="form-row"><label>Pick up from</label><input id="r-pickup" placeholder="1 High Street, Liverpool L1 1AA"></div>
+    <div class="form-row"><label>Deliver to</label><input id="r-dropoff" placeholder="TRT Motors, Liverpool"></div>
+    <div class="form-row"><label>Notes</label><input id="r-notes" placeholder="Keys with reception, non-runner, needs flatbed…"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('rec-modal')">Cancel</button>
+      <button class="btn btn-primary" id="rec-save-btn" onclick="saveRecJob()">Book recovery</button>
+    </div>
+  </div>
+</div>
+<!-- DRIVERS MODAL -->
+<div class="modal-overlay" id="drivers-modal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-title">Recovery drivers & companies</div>
+    <div id="drivers-list"></div>
+    <div class="section-label">Add new</div>
+    <div class="add-part-row">
+      <input id="d-name" placeholder="Name…" style="flex:2;min-width:120px">
+      <select id="d-kind" class="filter-select" style="flex:1">
+        <option value="driver">Driver</option>
+        <option value="company">Company</option>
+      </select>
+      <input id="d-phone" placeholder="Phone (optional)" style="flex:1;min-width:100px">
+      <button class="btn btn-primary" onclick="addDriver()">Add</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('drivers-modal')">Close</button>
+    </div>
+  </div>
+</div>
 <!-- LOADING -->
 <div id="loading-view" class="loading">
   <p>Loading TRT Motors…</p>
@@ -467,6 +616,7 @@ if (trackMatch) {
     const h0 = (window.location.hash || '').replace('#', '');
     if (h0.indexOf('week') === 0) showWeek();
     else if (h0.indexOf('gary') === 0) showGary();
+    else if (h0.indexOf('recovery') === 0) showRecovery();
   });
 }
 window.addEventListener('hashchange', () => {
@@ -474,6 +624,7 @@ window.addEventListener('hashchange', () => {
   const h = (window.location.hash || '').replace('#', '');
   if (h.indexOf('week') === 0) showWeek();
   else if (h.indexOf('gary') === 0) showGary();
+  else if (h.indexOf('recovery') === 0) showRecovery();
   else showDash();
 });
 // ─── DATE HELPERS ─────────────────────────────────────────
@@ -567,6 +718,7 @@ async function refreshJobs() {
   renderJobs();
   if (document.getElementById('week-view').style.display === 'block') renderWeek();
   if (document.getElementById('gary-view').style.display === 'block') renderGary();
+  if (document.getElementById('recovery-view').style.display === 'block') loadRecovery(true);
   if (detailJobId && document.getElementById('detail-modal').classList.contains('open')) renderDetail();
   loadEvents();
 }
@@ -1260,6 +1412,7 @@ function showWeek() {
   document.getElementById('admin-view').style.display = 'none';
   document.getElementById('tracker-view').style.display = 'none';
   document.getElementById('gary-view').style.display = 'none';
+  document.getElementById('recovery-view').style.display = 'none';
   document.getElementById('week-view').style.display = 'block';
   renderWeek();
 }
@@ -1267,6 +1420,7 @@ function showDash() {
   if (window.location.hash) history.replaceState(null, '', window.location.pathname);
   document.getElementById('week-view').style.display = 'none';
   document.getElementById('gary-view').style.display = 'none';
+  document.getElementById('recovery-view').style.display = 'none';
   document.getElementById('admin-view').style.display = 'block';
   renderJobs();
 }
@@ -1278,6 +1432,7 @@ function showGary() {
   document.getElementById('admin-view').style.display = 'none';
   document.getElementById('tracker-view').style.display = 'none';
   document.getElementById('week-view').style.display = 'none';
+  document.getElementById('recovery-view').style.display = 'none';
   document.getElementById('gary-view').style.display = 'block';
   renderGary();
 }
@@ -1497,6 +1652,542 @@ async function showTracker(reg) {
       Questions? Call us on <strong>0151 207 9817</strong><br>
       <span style="font-size:12px;margin-top:4px;display:block">Mon–Fri 8am–6pm · Sat 9am–1pm</span>
     </div>`;
+}
+// ═══════════════════════════════════════════════════════════
+// VEHICLE RECOVERY
+// ═══════════════════════════════════════════════════════════
+let recDrivers = [], recJobs = [], recOk = true;
+let recTab = 'cal';
+let recWeek = mondayISO(new Date());
+let recDetailId = null, recNotes = [];
+let recEditId = null;
+let recMap = null, recMapLayers = [], recMapToken = 0;
+const routeCache = {};
+const DRIVER_PALETTE = ['#1a1aff','#1D9E75','#BA7517','#A32D2D','#5B2D87','#0C447C','#C2410C','#16324F','#B9257F','#3B7A0A'];
+const REC_STATUSES = [
+  ['booked', 'Booked'],
+  ['in_progress', 'Out on the job'],
+  ['done', 'Completed'],
+  ['cancelled', 'Cancelled'],
+];
+function showRecovery() {
+  if ((window.location.hash || '').replace('#', '').indexOf('recovery') !== 0) window.location.hash = 'recovery';
+  document.getElementById('loading-view').style.display = 'none';
+  document.getElementById('admin-view').style.display = 'none';
+  document.getElementById('tracker-view').style.display = 'none';
+  document.getElementById('week-view').style.display = 'none';
+  document.getElementById('gary-view').style.display = 'none';
+  document.getElementById('recovery-view').style.display = 'block';
+  const md = document.getElementById('rec-map-date');
+  if (md && !md.value) md.value = todayISO();
+  loadRecovery();
+}
+async function loadRecovery(silent) {
+  const [d, r] = await Promise.all([
+    db.from('recovery_drivers').select('*').order('created_at', { ascending: true }),
+    db.from('recovery_jobs').select('*').order('scheduled_date', { ascending: true }).order('scheduled_time', { ascending: true }),
+  ]);
+  if (d.error || r.error) {
+    recOk = false;
+    if (!silent) console.error('recovery load:', (d.error || r.error).message);
+    renderRecovery();
+    return;
+  }
+  recOk = true;
+  recDrivers = d.data || [];
+  recJobs = r.data || [];
+  // quietly geocode any jobs that are missing coordinates
+  recJobs.filter(j => needsGeocode(j)).slice(0, 4).forEach(j => geocodeRecJob(j));
+  renderRecovery();
+}
+function renderRecovery() {
+  renderRecCal();
+  populateRecMapDriverFilter();
+  if (recTab === 'map') renderRecMap();
+  if (recDetailId && document.getElementById('rec-detail-modal').classList.contains('open')) renderRecDetail();
+}
+function recMigrationHint() {
+  return '<div class="hint-box">The recovery section needs its database tables — run <strong>supabase-recovery-migration.sql</strong> once in Supabase → SQL Editor, then hit ↻ Refresh.</div>';
+}
+function setRecTab(t) {
+  recTab = t;
+  document.getElementById('rt-cal').classList.toggle('active', t === 'cal');
+  document.getElementById('rt-map').classList.toggle('active', t === 'map');
+  document.getElementById('rec-cal-tab').style.display = t === 'cal' ? 'block' : 'none';
+  document.getElementById('rec-map-tab').style.display = t === 'map' ? 'block' : 'none';
+  if (t === 'map') {
+    initRecMap();
+    setTimeout(() => { if (recMap) recMap.invalidateSize(); renderRecMap(); }, 60);
+  }
+}
+// — helpers —
+function driverById(id) { return recDrivers.find(d => d.id === id) || null; }
+function driverColor(d) {
+  if (!d) return '#888888';
+  if (d.color) return d.color;
+  const i = recDrivers.indexOf(d);
+  return DRIVER_PALETTE[(i < 0 ? 0 : i) % DRIVER_PALETTE.length];
+}
+function fmtRecTime(t) { return t ? String(t).slice(0, 5) : ''; }
+function recTypeLabel(t) { return t === 'delivery' ? 'Delivery' : 'Collection'; }
+function shortAddr(a) {
+  if (!a) return '—';
+  const first = String(a).split(',')[0].trim();
+  return first.length > 26 ? first.slice(0, 26) + '…' : first;
+}
+function needsGeocode(j) {
+  return (j.pickup_address && (j.pickup_lat == null || j.pickup_lng == null)) ||
+         (j.dropoff_address && (j.dropoff_lat == null || j.dropoff_lng == null));
+}
+function recStatusLabel(s) { const m = REC_STATUSES.find(x => x[0] === s); return m ? m[1] : s; }
+// — CALENDAR —
+function navRecWeek(n) { recWeek = addWeeksISO(recWeek, n); renderRecCal(); }
+function goRecThisWeek() { recWeek = mondayISO(new Date()); renderRecCal(); }
+function recTile(r) {
+  const d = driverById(r.driver_id);
+  const cls = (r.job_type === 'delivery' ? 'r-del' : 'r-coll') +
+    (r.status === 'done' ? ' r-done' : r.status === 'cancelled' ? ' r-cancelled' : '');
+  return `<div class="rec-tile ${cls}" onclick="openRecDetail('${r.id}')" title="Open recovery details">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+      <span class="rec-time">${fmtRecTime(r.scheduled_time) || 'Anytime'}</span>
+      <span class="rec-type ${r.job_type === 'delivery' ? 'del' : 'coll'}">${recTypeLabel(r.job_type)}</span>
+    </div>
+    ${r.reg ? `<span class="cal-reg" style="margin-top:4px">${escHtml(r.reg)}</span>` : ''}
+    ${r.customer_name ? `<div class="cal-name">${escHtml(r.customer_name)}</div>` : ''}
+    <div class="rec-route"><strong>${escHtml(shortAddr(r.pickup_address))}</strong> → <strong>${escHtml(shortAddr(r.dropoff_address))}</strong></div>
+    ${d ? `<div class="rec-driver-row"><span class="driver-dot" style="background:${driverColor(d)}"></span>${escHtml(d.name)}</div>`
+        : `<div class="rec-nodriver">⚠ No driver allocated</div>`}
+    ${r.notes ? `<div class="rec-note-flag">📝 ${escHtml(r.notes.length > 34 ? r.notes.slice(0, 34) + '…' : r.notes)}</div>` : ''}
+  </div>`;
+}
+function renderRecCal() {
+  const el = document.getElementById('rec-cal-body');
+  if (!el) return;
+  if (!recOk) { el.innerHTML = recMigrationHint(); return; }
+  const t = mondayISO(new Date()), n = addWeeksISO(t, 1);
+  const badge = recWeek === t ? '<span class="wk-badge">This week</span>'
+              : recWeek === n ? '<span class="wk-badge">Next week</span>'
+              : recWeek < t ? '<span class="wk-badge" style="background:var(--red-light);color:var(--red)">Past</span>' : '';
+  const label = document.getElementById('rec-week-label');
+  if (label) label.innerHTML = 'Week commencing ' + fmtWeekISO(recWeek) + badge;
+  const weekEnd = addDaysISO(recWeek, 7);
+  const weekJobs = recJobs.filter(r => r.scheduled_date >= recWeek && r.scheduled_date < weekEnd);
+  const colls = weekJobs.filter(r => r.job_type !== 'delivery' && r.status !== 'cancelled').length;
+  const dels = weekJobs.filter(r => r.job_type === 'delivery' && r.status !== 'cancelled').length;
+  const unalloc = weekJobs.filter(r => !r.driver_id && r.status !== 'cancelled' && r.status !== 'done').length;
+  const intro = document.getElementById('rec-intro');
+  if (intro) intro.innerHTML = weekJobs.length
+    ? `<strong>${colls}</strong> collection${colls === 1 ? '' : 's'} · <strong>${dels}</strong> deliver${dels === 1 ? 'y' : 'ies'}${unalloc ? ` · <span style="color:var(--red)"><strong>${unalloc}</strong> need${unalloc === 1 ? 's' : ''} a driver</span>` : ''} · click a job for details & notes`
+    : 'Nothing booked this week — use <strong>+ Book recovery</strong> to add a job.';
+  const todayIso = todayISO();
+  const cols = [];
+  for (let i = 0; i < 7; i++) {
+    const d = addDaysISO(recWeek, i);
+    const dayJobs = weekJobs.filter(r => r.scheduled_date === d)
+      .sort((a, b) => String(a.scheduled_time || '99').localeCompare(String(b.scheduled_time || '99')));
+    cols.push(`
+    <div class="rec-day${d === todayIso ? ' today' : ''}${i >= 5 ? ' weekend' : ''}">
+      <div class="cal-day-head">
+        <span>${fmtDayName(d)}</span>
+        <span class="cal-date">${fmtShortISO(d)}</span>
+      </div>
+      ${dayJobs.length ? dayJobs.map(recTile).join('') : '<div class="cal-empty">—</div>'}
+    </div>`);
+  }
+  el.innerHTML = `<div class="rec-grid">${cols.join('')}</div>`;
+}
+// — BOOK / EDIT MODAL —
+function openRecModal(editId) {
+  recEditId = editId || null;
+  const r = editId ? recJobs.find(x => x.id === editId) : null;
+  document.getElementById('rec-modal-title').textContent = r ? 'Edit recovery' : 'Book a recovery';
+  document.getElementById('rec-save-btn').textContent = r ? 'Save changes' : 'Book recovery';
+  const jobSel = document.getElementById('r-job');
+  jobSel.innerHTML = '<option value="">— Not linked —</option>' +
+    jobs.filter(j => j.stage < COMPLETE_STAGE).map(j =>
+      `<option value="${j.id}"${r && r.job_id === j.id ? ' selected' : ''}>${escHtml(j.reg)} — ${escHtml(j.name)}</option>`).join('');
+  const drvSel = document.getElementById('r-driver');
+  drvSel.innerHTML = '<option value="">— Unallocated —</option>' +
+    recDrivers.filter(d => d.active !== false).map(d =>
+      `<option value="${d.id}"${r && r.driver_id === d.id ? ' selected' : ''}>${escHtml(d.name)}${d.kind === 'company' ? ' (company)' : ''}</option>`).join('');
+  document.getElementById('r-type').value = r ? r.job_type : 'collection';
+  document.getElementById('r-date').value = r ? r.scheduled_date : todayISO();
+  document.getElementById('r-time').value = r ? fmtRecTime(r.scheduled_time) : '';
+  document.getElementById('r-name').value = r ? (r.customer_name || '') : '';
+  document.getElementById('r-reg').value = r ? (r.reg || '') : '';
+  document.getElementById('r-vehicle').value = r ? (r.vehicle || '') : '';
+  document.getElementById('r-pickup').value = r ? (r.pickup_address || '') : '';
+  document.getElementById('r-dropoff').value = r ? (r.dropoff_address || '') : '';
+  document.getElementById('r-notes').value = r ? (r.notes || '') : '';
+  openModal('rec-modal');
+}
+function recPrefillFromJob(jobId) {
+  const j = jobs.find(x => x.id === jobId);
+  if (!j) return;
+  document.getElementById('r-name').value = j.name || '';
+  document.getElementById('r-reg').value = j.reg || '';
+  document.getElementById('r-vehicle').value = j.vehicle || '';
+  const type = document.getElementById('r-type').value;
+  const garage = 'TRT Motors, Liverpool';
+  if (type === 'delivery') {
+    document.getElementById('r-pickup').value = garage;
+    document.getElementById('r-dropoff').value = j.address || '';
+  } else {
+    document.getElementById('r-pickup').value = j.address || '';
+    document.getElementById('r-dropoff').value = garage;
+  }
+}
+async function saveRecJob() {
+  const row = {
+    job_id: document.getElementById('r-job').value || null,
+    job_type: document.getElementById('r-type').value,
+    driver_id: document.getElementById('r-driver').value || null,
+    scheduled_date: document.getElementById('r-date').value,
+    scheduled_time: document.getElementById('r-time').value || null,
+    customer_name: document.getElementById('r-name').value.trim() || null,
+    reg: document.getElementById('r-reg').value.trim().toUpperCase() || null,
+    vehicle: document.getElementById('r-vehicle').value.trim() || null,
+    pickup_address: document.getElementById('r-pickup').value.trim() || null,
+    dropoff_address: document.getElementById('r-dropoff').value.trim() || null,
+    notes: document.getElementById('r-notes').value.trim() || null,
+    updated_at: new Date().toISOString(),
+  };
+  if (!row.scheduled_date) { alert('Please pick a date.'); return; }
+  if (!row.pickup_address || !row.dropoff_address) { alert('Please fill in both the pick up and deliver to addresses.'); return; }
+  const old = recEditId ? recJobs.find(x => x.id === recEditId) : null;
+  // re-geocode any address that changed
+  if (!old || old.pickup_address !== row.pickup_address) { row.pickup_lat = null; row.pickup_lng = null; }
+  if (!old || old.dropoff_address !== row.dropoff_address) { row.dropoff_lat = null; row.dropoff_lng = null; }
+  let saved, error;
+  if (recEditId) ({ data: saved, error } = await db.from('recovery_jobs').update(row).eq('id', recEditId).select());
+  else ({ data: saved, error } = await db.from('recovery_jobs').insert([row]).select());
+  if (error) {
+    alert('Error saving recovery: ' + error.message + (recOk ? '' : '\n\nHave you run supabase-recovery-migration.sql in Supabase yet?'));
+    return;
+  }
+  const rec = (saved && saved[0]) || null;
+  const drv = driverById(row.driver_id);
+  logEvent({ id: row.job_id, reg: row.reg, name: row.customer_name }, 'recovery',
+    (recEditId ? 'Recovery updated: ' : 'Recovery booked: ') + recTypeLabel(row.job_type) + ' ' +
+    shortAddr(row.pickup_address) + ' → ' + shortAddr(row.dropoff_address) + ' on ' + fmtWeekISO(row.scheduled_date) +
+    (row.scheduled_time ? ' at ' + fmtRecTime(row.scheduled_time) : '') + (drv ? ' — ' + drv.name : ''), false);
+  closeModal('rec-modal');
+  recEditId = null;
+  await loadRecovery();
+  if (rec) { recWeek = mondayISO(new Date(rec.scheduled_date + 'T00:00:00')); renderRecCal(); }
+}
+async function deleteRecJob(id) {
+  const r = recJobs.find(x => x.id === id);
+  if (!confirm('Delete this recovery job' + (r && r.reg ? ' for ' + r.reg : '') + '?')) return;
+  const { error } = await db.from('recovery_jobs').delete().eq('id', id);
+  if (error) { alert('Error deleting: ' + error.message); return; }
+  recJobs = recJobs.filter(x => x.id !== id);
+  document.getElementById('rec-detail-modal').classList.remove('open');
+  renderRecovery();
+}
+async function setRecField(id, field, value) {
+  const upd = { updated_at: new Date().toISOString() };
+  upd[field] = value || null;
+  const { error } = await db.from('recovery_jobs').update(upd).eq('id', id);
+  if (error) { alert('Error saving: ' + error.message); return; }
+  const r = recJobs.find(x => x.id === id);
+  if (r) r[field] = value || null;
+  renderRecovery();
+}
+// — DETAIL SHEET —
+async function openRecDetail(id) {
+  recDetailId = id;
+  recNotes = [];
+  renderRecDetail();
+  document.getElementById('rec-detail-modal').classList.add('open');
+  const { data } = await db.from('recovery_notes').select('*').eq('recovery_id', id).order('created_at', { ascending: false });
+  recNotes = data || [];
+  if (recDetailId === id) renderRecDetail();
+}
+function closeRecDetail(e) {
+  if (e.target === document.getElementById('rec-detail-modal')) {
+    document.getElementById('rec-detail-modal').classList.remove('open');
+  }
+}
+function renderRecDetail() {
+  const r = recJobs.find(x => x.id === recDetailId);
+  const el = document.getElementById('rec-detail-content');
+  if (!r) { el.innerHTML = ''; return; }
+  const d = driverById(r.driver_id);
+  const chips = [];
+  chips.push(`<span class="chip" style="${r.job_type === 'delivery' ? 'background:var(--green-light);border-color:#5CB87A;color:#0F6E56' : 'background:var(--amber-light);border-color:#E8C48A;color:var(--amber)'}"><strong>${recTypeLabel(r.job_type)}</strong></span>`);
+  chips.push(`<span class="chip">🗓 <strong>${fmtWeekISO(r.scheduled_date)}</strong>${r.scheduled_time ? ' at <strong>' + fmtRecTime(r.scheduled_time) + '</strong>' : ''}</span>`);
+  chips.push(d ? `<span class="chip"><span class="driver-dot" style="background:${driverColor(d)};display:inline-block;vertical-align:-1px"></span> <strong>${escHtml(d.name)}</strong>${d.phone ? ' · ' + escHtml(d.phone) : ''}</span>`
+              : `<span class="chip" style="background:var(--red-light);border-color:var(--red);color:var(--red)">⚠ No driver allocated</span>`);
+  chips.push(`<span class="chip">Status: <strong>${recStatusLabel(r.status)}</strong></span>`);
+  const geoWarn = needsGeocode(r)
+    ? `<div class="hint-box" style="margin-bottom:12px">📍 Still locating one of the addresses for the map — if it never appears, make the address more specific (add the town / postcode) via Edit.</div>` : '';
+  const statusOpts = REC_STATUSES.map(s => `<option value="${s[0]}"${r.status === s[0] ? ' selected' : ''}>${s[1]}</option>`).join('');
+  const drvOpts = '<option value="">— Unallocated —</option>' + recDrivers.filter(x => x.active !== false).map(x =>
+    `<option value="${x.id}"${r.driver_id === x.id ? ' selected' : ''}>${escHtml(x.name)}</option>`).join('');
+  const notesList = recNotes.length ? recNotes.map(n => `
+    <div class="note-item">
+      <div style="flex:1">
+        <div class="note-body">${escHtml(n.note)}</div>
+        <div class="note-time">${fmtDT(n.created_at)}</div>
+      </div>
+      <button class="note-del" onclick="deleteRecNote('${n.id}')" title="Delete note">✕</button>
+    </div>`).join('') : '<div style="font-size:12px;color:var(--muted);padding:8px 2px">No dated notes yet.</div>';
+  el.innerHTML = `
+    <div class="detail-header">
+      ${r.reg ? `<div class="detail-reg">${escHtml(r.reg)}</div>` : ''}
+      <div class="detail-info">
+        <div class="detail-name">${escHtml(r.customer_name) || recTypeLabel(r.job_type)}</div>
+        <div class="detail-vehicle">${escHtml(r.vehicle) || ''}</div>
+      </div>
+    </div>
+    <div class="kv-chips">${chips.join('')}</div>
+    ${geoWarn}
+    <div class="detail-refs" style="font-size:12px;line-height:1.7">
+      <div>🚛 <strong>Pick up:</strong> ${escHtml(r.pickup_address) || '—'}</div>
+      <div>🏁 <strong>Deliver to:</strong> ${escHtml(r.dropoff_address) || '—'}</div>
+      ${r.notes ? `<div style="margin-top:6px">📝 ${escHtml(r.notes)}</div>` : ''}
+    </div>
+    <div class="detail-actions" style="margin-top:0;margin-bottom:14px">
+      <select class="detail-select" onchange="setRecField('${r.id}','driver_id',this.value)" title="Allocate driver">${drvOpts}</select>
+      <select class="detail-select" onchange="setRecField('${r.id}','status',this.value)" title="Status">${statusOpts}</select>
+    </div>
+    <div class="section-label">Notes</div>
+    <div class="add-note-row">
+      <textarea id="new-rec-note" placeholder="Add a note — stamped with today's date & time…"></textarea>
+      <button class="btn btn-primary" onclick="addRecNote()">Add</button>
+    </div>
+    ${notesList}
+    <div class="detail-actions">
+      <button class="btn" onclick="openRecModal('${r.id}')">✏️ Edit details</button>
+      <button class="btn" onclick="document.getElementById('rec-detail-modal').classList.remove('open');setRecTab('map');document.getElementById('rec-map-date').value='${r.scheduled_date}';renderRecMap()">🗺 View on map</button>
+      <span style="flex:1"></span>
+      <button class="detail-del" onclick="deleteRecJob('${r.id}')">Delete</button>
+    </div>`;
+}
+async function addRecNote() {
+  const ta = document.getElementById('new-rec-note');
+  const note = (ta.value || '').trim();
+  if (!note) return;
+  const { data, error } = await db.from('recovery_notes').insert([{ recovery_id: recDetailId, note }]).select();
+  if (error) { alert('Error saving note: ' + error.message); return; }
+  recNotes.unshift((data && data[0]) || { id: null, note, created_at: new Date().toISOString() });
+  const r = recJobs.find(x => x.id === recDetailId);
+  if (r) logEvent({ id: r.job_id, reg: r.reg, name: r.customer_name }, 'recovery', 'Recovery note: "' + (note.length > 80 ? note.slice(0, 80) + '…' : note) + '"', false);
+  renderRecDetail();
+}
+async function deleteRecNote(id) {
+  if (!confirm('Delete this note?')) return;
+  const { error } = await db.from('recovery_notes').delete().eq('id', id);
+  if (error) { alert('Error deleting note: ' + error.message); return; }
+  recNotes = recNotes.filter(n => n.id !== id);
+  renderRecDetail();
+}
+// — DRIVERS —
+function openDriversModal() {
+  renderDriversList();
+  openModal('drivers-modal');
+}
+function renderDriversList() {
+  const el = document.getElementById('drivers-list');
+  if (!recOk) { el.innerHTML = recMigrationHint(); return; }
+  el.innerHTML = recDrivers.length ? recDrivers.map(d => `
+    <div class="driver-row" style="${d.active === false ? 'opacity:0.5' : ''}">
+      <span class="driver-dot" style="background:${driverColor(d)}"></span>
+      <span style="flex:1;font-weight:600">${escHtml(d.name)}</span>
+      ${d.kind === 'company' ? '<span class="kind-tag">Company</span>' : ''}
+      ${d.phone ? `<span style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">${escHtml(d.phone)}</span>` : ''}
+      <button class="note-del" onclick="deleteDriver('${d.id}','${escAttr(d.name)}')" title="Remove">✕</button>
+    </div>`).join('') : '<div style="font-size:12px;color:var(--muted);padding:8px 2px">No drivers yet — add your recovery drivers and companies below.</div>';
+}
+async function addDriver() {
+  const name = document.getElementById('d-name').value.trim();
+  const kind = document.getElementById('d-kind').value;
+  const phone = document.getElementById('d-phone').value.trim() || null;
+  if (!name) { alert('Please enter a name.'); return; }
+  const used = recDrivers.map(d => d.color).filter(Boolean);
+  const color = DRIVER_PALETTE.find(c => used.indexOf(c) === -1) || DRIVER_PALETTE[recDrivers.length % DRIVER_PALETTE.length];
+  const { data, error } = await db.from('recovery_drivers').insert([{ name, kind, phone, color }]).select();
+  if (error) { alert('Error adding driver: ' + error.message); return; }
+  if (data && data[0]) recDrivers.push(data[0]);
+  document.getElementById('d-name').value = '';
+  document.getElementById('d-phone').value = '';
+  renderDriversList();
+  renderRecovery();
+}
+async function deleteDriver(id, name) {
+  if (!confirm('Remove ' + name + '? Jobs allocated to them will become unallocated.')) return;
+  const { error } = await db.from('recovery_drivers').delete().eq('id', id);
+  if (error) { alert('Error removing driver: ' + error.message); return; }
+  recDrivers = recDrivers.filter(d => d.id !== id);
+  recJobs.forEach(r => { if (r.driver_id === id) r.driver_id = null; });
+  renderDriversList();
+  renderRecovery();
+}
+// — GEOCODING (Nominatim / OpenStreetMap, free) —
+async function geocodeAddress(addr) {
+  try {
+    const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=gb&q=' + encodeURIComponent(addr);
+    const res = await fetch(url, { headers: { 'Accept-Language': 'en-GB' } });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data || !data.length) return null;
+    return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+  } catch (e) { return null; }
+}
+async function geocodeRecJob(r) {
+  const upd = {};
+  if (r.pickup_address && (r.pickup_lat == null || r.pickup_lng == null)) {
+    const g = await geocodeAddress(r.pickup_address);
+    if (g) { upd.pickup_lat = g.lat; upd.pickup_lng = g.lng; }
+  }
+  if (r.dropoff_address && (r.dropoff_lat == null || r.dropoff_lng == null)) {
+    await new Promise(res => setTimeout(res, 1100));   // be polite to the free geocoder
+    const g = await geocodeAddress(r.dropoff_address);
+    if (g) { upd.dropoff_lat = g.lat; upd.dropoff_lng = g.lng; }
+  }
+  if (!Object.keys(upd).length) return;
+  Object.assign(r, upd);
+  await db.from('recovery_jobs').update(upd).eq('id', r.id);
+  if (recTab === 'map') renderRecMap();
+  if (recDetailId === r.id && document.getElementById('rec-detail-modal').classList.contains('open')) renderRecDetail();
+}
+// — ROUTE MAP —
+function initRecMap() {
+  if (recMap) return;
+  recMap = L.map('rec-map', { scrollWheelZoom: true }).setView([53.41, -2.85], 9); // Liverpool area
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(recMap);
+}
+function populateRecMapDriverFilter() {
+  const sel = document.getElementById('rec-map-driver');
+  if (!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">All drivers</option>' +
+    recDrivers.map(d => `<option value="${d.id}"${cur === d.id ? ' selected' : ''}>${escHtml(d.name)}</option>`).join('') +
+    `<option value="__none"${cur === '__none' ? ' selected' : ''}>Unallocated only</option>`;
+}
+async function fetchRoute(fromLat, fromLng, toLat, toLng) {
+  const key = [fromLng, fromLat, toLng, toLat].map(n => n.toFixed(5)).join(',');
+  if (routeCache[key]) return routeCache[key];
+  try {
+    const url = `https://router.project-osrm.org/route/v1/driving/${fromLng},${fromLat};${toLng},${toLat}?overview=full&geometries=geojson`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('osrm ' + res.status);
+    const data = await res.json();
+    if (!data.routes || !data.routes.length) throw new Error('no route');
+    const out = {
+      coords: data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]),
+      km: data.routes[0].distance / 1000,
+      mins: data.routes[0].duration / 60,
+    };
+    routeCache[key] = out;
+    return out;
+  } catch (e) {
+    // fall back to a straight line if the free router is busy
+    const out = { coords: [[fromLat, fromLng], [toLat, toLng]], km: null, mins: null, straight: true };
+    routeCache[key] = out;
+    return out;
+  }
+}
+function recMarkerIcon(color, label) {
+  return L.divIcon({
+    className: '',
+    html: `<div class="rec-marker" style="background:${color};width:28px;height:28px"><span>${label}</span></div>`,
+    iconSize: [28, 28],
+    iconAnchor: [14, 28],
+  });
+}
+function clearRecMapLayers() {
+  recMapLayers.forEach(l => { try { recMap.removeLayer(l); } catch (e) {} });
+  recMapLayers = [];
+}
+async function renderRecMap() {
+  const side = document.getElementById('rec-map-side');
+  if (!recMap || !side) return;
+  if (!recOk) { side.innerHTML = recMigrationHint(); return; }
+  const token = ++recMapToken;
+  const date = document.getElementById('rec-map-date').value || todayISO();
+  const drvFilter = document.getElementById('rec-map-driver').value;
+  clearRecMapLayers();
+  let dayJobs = recJobs.filter(r => r.scheduled_date === date && r.status !== 'cancelled');
+  if (drvFilter === '__none') dayJobs = dayJobs.filter(r => !r.driver_id);
+  else if (drvFilter) dayJobs = dayJobs.filter(r => r.driver_id === drvFilter);
+  dayJobs.sort((a, b) => String(a.scheduled_time || '99').localeCompare(String(b.scheduled_time || '99')));
+  if (!dayJobs.length) {
+    side.innerHTML = `<div class="map-driver-card" style="border-left-color:var(--border-strong)"><div style="font-size:12px;color:var(--muted)">No recoveries booked for ${fmtWeekISO(date)}${drvFilter ? ' for that driver' : ''}.</div></div>`;
+    return;
+  }
+  // group by driver
+  const groups = [];
+  const byDriver = {};
+  dayJobs.forEach(r => {
+    const k = r.driver_id || '__none';
+    if (!byDriver[k]) { byDriver[k] = { driver: driverById(r.driver_id), jobs: [] }; groups.push(byDriver[k]); }
+    byDriver[k].jobs.push(r);
+  });
+  const allBounds = [];
+  let sideHtml = '';
+  for (const g of groups) {
+    const color = g.driver ? driverColor(g.driver) : '#888888';
+    let stopNo = 0;
+    let prev = null;
+    let legsHtml = '';
+    for (const r of g.jobs) {
+      const hasPickup = r.pickup_lat != null && r.pickup_lng != null;
+      const hasDrop = r.dropoff_lat != null && r.dropoff_lng != null;
+      let legInfo = '';
+      // dashed "reposition" line from previous drop-off to this pick up
+      if (prev && hasPickup && prev.dropoff_lat != null) {
+        const rep = await fetchRoute(prev.dropoff_lat, prev.dropoff_lng, r.pickup_lat, r.pickup_lng);
+        if (token !== recMapToken) return;
+        recMapLayers.push(L.polyline(rep.coords, { color, weight: 3, opacity: 0.45, dashArray: '6 8' }).addTo(recMap));
+      }
+      if (hasPickup && hasDrop) {
+        const route = await fetchRoute(r.pickup_lat, r.pickup_lng, r.dropoff_lat, r.dropoff_lng);
+        if (token !== recMapToken) return;
+        const line = L.polyline(route.coords, { color, weight: 5, opacity: 0.85 }).addTo(recMap);
+        line.bindPopup(`<strong>${escHtml(g.driver ? g.driver.name : 'Unallocated')}</strong> — ${recTypeLabel(r.job_type)}<br>${escHtml(shortAddr(r.pickup_address))} → ${escHtml(shortAddr(r.dropoff_address))}${route.km ? '<br>' + route.km.toFixed(0) + ' km · ~' + Math.round(route.mins) + ' min' : ''}`);
+        recMapLayers.push(line);
+        route.coords.forEach(c => allBounds.push(c));
+        if (route.km != null) legInfo = ` · ${(route.km * 0.621371).toFixed(0)} mi, ~${Math.round(route.mins)} min`;
+      }
+      if (hasPickup) {
+        stopNo++;
+        const m = L.marker([r.pickup_lat, r.pickup_lng], { icon: recMarkerIcon(color, stopNo) }).addTo(recMap);
+        m.bindPopup(`<strong>Stop ${stopNo} — pick up</strong> (${recTypeLabel(r.job_type)})<br>${escHtml(r.pickup_address || '')}${r.reg ? '<br>Reg: ' + escHtml(r.reg) : ''}${r.scheduled_time ? '<br>' + fmtRecTime(r.scheduled_time) : ''}`);
+        recMapLayers.push(m);
+        allBounds.push([r.pickup_lat, r.pickup_lng]);
+      }
+      if (hasDrop) {
+        stopNo++;
+        const m = L.marker([r.dropoff_lat, r.dropoff_lng], { icon: recMarkerIcon(color, stopNo) }).addTo(recMap);
+        m.bindPopup(`<strong>Stop ${stopNo} — drop off</strong> (${recTypeLabel(r.job_type)})<br>${escHtml(r.dropoff_address || '')}${r.reg ? '<br>Reg: ' + escHtml(r.reg) : ''}`);
+        recMapLayers.push(m);
+        allBounds.push([r.dropoff_lat, r.dropoff_lng]);
+      }
+      const warn = (!hasPickup || !hasDrop) ? ` <span class="map-warn">⚠ address not located yet</span>` : '';
+      legsHtml += `<div class="map-leg" onclick="focusRecLeg('${r.id}')"><span class="leg-no" style="border-color:${color};color:${color}">${g.jobs.indexOf(r) + 1}</span>${r.scheduled_time ? '<strong>' + fmtRecTime(r.scheduled_time) + '</strong> · ' : ''}${recTypeLabel(r.job_type)}: <strong>${escHtml(shortAddr(r.pickup_address))}</strong> → <strong>${escHtml(shortAddr(r.dropoff_address))}</strong>${legInfo}${warn}</div>`;
+      prev = r;
+    }
+    sideHtml += `<div class="map-driver-card" style="border-left-color:${color}">
+      <div class="map-driver-name"><span class="driver-dot" style="background:${color}"></span>${escHtml(g.driver ? g.driver.name : '⚠ Unallocated')}<span style="font-weight:400;color:var(--muted);font-size:11px;margin-left:auto">${g.jobs.length} job${g.jobs.length === 1 ? '' : 's'}</span></div>
+      ${legsHtml}
+    </div>`;
+  }
+  if (token !== recMapToken) return;
+  side.innerHTML = sideHtml;
+  if (allBounds.length) recMap.fitBounds(allBounds, { padding: [40, 40], maxZoom: 13 });
+}
+function focusRecLeg(id) {
+  const r = recJobs.find(x => x.id === id);
+  if (!r || !recMap) return;
+  const pts = [];
+  if (r.pickup_lat != null) pts.push([r.pickup_lat, r.pickup_lng]);
+  if (r.dropoff_lat != null) pts.push([r.dropoff_lat, r.dropoff_lng]);
+  if (pts.length) recMap.fitBounds(pts, { padding: [60, 60], maxZoom: 13 });
 }
 </script>
 </body>
