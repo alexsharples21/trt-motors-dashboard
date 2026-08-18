@@ -2029,7 +2029,7 @@ function renderRecDetail() {
   const next = recJobs.find(x => x.follows_id === r.id);
   if (next) chips.push(`<span class="chip" style="background:#EDEBFF;border-color:#B7B0F0;color:#3B2DA3">Then straight to <strong>${escHtml(next.reg || shortAddr(next.pickup_address))}</strong> ↴</span>`);
   const geoWarn = needsGeocode(r)
-    ? `<div class="hint-box" style="margin-bottom:12px">📍 Still locating one of the addresses for the map — if it never appears, make the address more specific (add the town / postcode) via Edit.</div>` : '';
+    ? `<div class="hint-box" style="margin-bottom:12px">📍 Not on the map yet — map pins are placed by postcode, so make sure both addresses include one (edit the job and add it).</div>` : '';
   const statusOpts = REC_STATUSES.map(s => `<option value="${s[0]}"${r.status === s[0] ? ' selected' : ''}>${s[1]}</option>`).join('');
   const drvOpts = '<option value="">— Unallocated —</option>' + recDrivers.filter(x => x.active !== false).map(x =>
     `<option value="${x.id}"${r.driver_id === x.id ? ' selected' : ''}>${escHtml(x.name)}</option>`).join('');
@@ -2132,8 +2132,26 @@ async function deleteDriver(id, name) {
   renderDriversList();
   renderRecovery();
 }
-// — GEOCODING (Nominatim / OpenStreetMap, free) —
+// — GEOCODING — pins are placed by UK POSTCODE (postcodes.io, free & exact).
+// Only if an address has no postcode do we fall back to a full-address lookup.
+function extractPostcode(addr) {
+  const m = String(addr || '').toUpperCase().match(/\b([A-Z]{1,2}[0-9][A-Z0-9]?)\s*([0-9][A-Z]{2})\b/);
+  return m ? (m[1] + ' ' + m[2]) : null;
+}
 async function geocodeAddress(addr) {
+  const pc = extractPostcode(addr);
+  if (pc) {
+    try {
+      const res = await fetch('https://api.postcodes.io/postcodes/' + encodeURIComponent(pc));
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.result && data.result.latitude != null) {
+          return { lat: data.result.latitude, lng: data.result.longitude };
+        }
+      }
+    } catch (e) {}
+  }
+  // no postcode in the address (or postcode not recognised) — try the full text
   try {
     const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=gb&q=' + encodeURIComponent(addr);
     const res = await fetch(url, { headers: { 'Accept-Language': 'en-GB' } });
@@ -2150,7 +2168,7 @@ async function geocodeRecJob(r) {
     if (g) { upd.pickup_lat = g.lat; upd.pickup_lng = g.lng; }
   }
   if (r.dropoff_address && (r.dropoff_lat == null || r.dropoff_lng == null)) {
-    await new Promise(res => setTimeout(res, 1100));   // be polite to the free geocoder
+    await new Promise(res => setTimeout(res, 400));   // small gap between lookups
     const g = await geocodeAddress(r.dropoff_address);
     if (g) { upd.dropoff_lat = g.lat; upd.dropoff_lng = g.lng; }
   }
