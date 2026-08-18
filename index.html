@@ -1680,6 +1680,8 @@ let recEditId = null;
 let recMap = null, recMapLayers = [], recMapToken = 0, recMapFitKey = '';
 const routeCache = {};
 const DRIVER_PALETTE = ['#1a1aff','#1D9E75','#BA7517','#A32D2D','#5B2D87','#0C447C','#C2410C','#16324F','#B9257F','#3B7A0A'];
+// One colour per journey on the map, so individual routes are easy to tell apart
+const JOURNEY_PALETTE = ['#1a1aff','#D81B60','#1D9E75','#E65100','#8E24AA','#00838F','#3949AB','#5D4037','#C0CA33','#D32F2F'];
 // Hard-wired bases — collections come back to one of these, deliveries go out from one.
 const BASES = [
   { key: 'TRT',    name: 'TRT Motors',        addr: '40 Fox Street, Liverpool, L3 3BQ',                        lat: 53.41659,  lng: -2.97672 },
@@ -2252,6 +2254,7 @@ async function renderRecMap() {
   });
   const allBounds = [];
   const basesPlaced = {};   // one 🏠 pin per base, however many jobs touch it
+  let journeyIdx = 0;       // every journey gets its own colour, across all drivers
   let sideHtml = '';
   for (const g of groups) {
     const color = g.driver ? driverColor(g.driver) : '#888888';
@@ -2260,6 +2263,7 @@ async function renderRecMap() {
     let prev = null;
     let legsHtml = '';
     for (const r of g.jobs) {
+      const jc = JOURNEY_PALETTE[journeyIdx++ % JOURNEY_PALETTE.length];
       const linked = !!(r.follows_id && prev && r.follows_id === prev.id);
       const hasPickup = r.pickup_lat != null && r.pickup_lng != null;
       const hasDrop = r.dropoff_lat != null && r.dropoff_lng != null;
@@ -2271,8 +2275,8 @@ async function renderRecMap() {
         const rep = await fetchRoute(prev.dropoff_lat, prev.dropoff_lng, r.pickup_lat, r.pickup_lng);
         if (token !== recMapToken) return;
         const leg = L.polyline(rep.coords, linked
-          ? { color, weight: 4, opacity: 0.8, dashArray: '10 6' }
-          : { color, weight: 3, opacity: 0.4, dashArray: '3 9' }).addTo(recMap);
+          ? { color: jc, weight: 4, opacity: 0.8, dashArray: '10 6' }
+          : { color: jc, weight: 3, opacity: 0.4, dashArray: '3 9' }).addTo(recMap);
         if (linked) {
           leg.bindPopup(`<strong>Straight on</strong> — no return to base<br>${escHtml(shortAddr(prev.dropoff_address))} → ${escHtml(shortAddr(r.pickup_address))}${rep.km ? '<br>' + (rep.km * 0.621371).toFixed(0) + ' mi · ~' + Math.round(rep.mins) + ' min' : ''}`);
           rep.coords.forEach(c => allBounds.push(c));
@@ -2282,7 +2286,7 @@ async function renderRecMap() {
       if (hasPickup && hasDrop) {
         const route = await fetchRoute(r.pickup_lat, r.pickup_lng, r.dropoff_lat, r.dropoff_lng);
         if (token !== recMapToken) return;
-        const line = L.polyline(route.coords, { color, weight: 5, opacity: 0.85 }).addTo(recMap);
+        const line = L.polyline(route.coords, { color: jc, weight: 5, opacity: 0.85 }).addTo(recMap);
         line.bindPopup(`<strong>${escHtml(g.driver ? g.driver.name : 'Unallocated')}</strong> — ${recTypeLabel(r.job_type)}<br>${escHtml(shortAddr(r.pickup_address))} → ${escHtml(shortAddr(r.dropoff_address))}${route.km ? '<br>' + route.km.toFixed(0) + ' km · ~' + Math.round(route.mins) + ' min' : ''}`);
         recMapLayers.push(line);
         route.coords.forEach(c => allBounds.push(c));
@@ -2302,7 +2306,7 @@ async function renderRecMap() {
           return;
         }
         stopNo++;
-        const m = L.marker([lat, lng], { icon: recMarkerIcon(color, stopNo) }).addTo(recMap);
+        const m = L.marker([lat, lng], { icon: recMarkerIcon(jc, stopNo) }).addTo(recMap);
         m.bindPopup(`<strong>Stop ${stopNo} — ${kind}</strong> (${recTypeLabel(r.job_type)})<br>${escHtml(addr || '')}${r.reg ? '<br>Reg: ' + escHtml(r.reg) : ''}${r.scheduled_time ? '<br>' + fmtRecTime(r.scheduled_time) : ''}`);
         recMapLayers.push(m);
         allBounds.push([lat, lng]);
@@ -2311,7 +2315,7 @@ async function renderRecMap() {
       if (hasDrop) placeStop(r.dropoff_lat, r.dropoff_lng, r.dropoff_address, 'drop off');
       const warn = (!hasPickup || !hasDrop) ? ` <span class="map-warn">⚠ address not located yet</span>` : '';
       const linkNote = linked ? `<div style="font-size:10px;color:var(--muted);padding-left:20px">↳ straight on from ${escHtml(prev.reg || shortAddr(prev.dropoff_address))} — no return to base</div>` : '';
-      legsHtml += linkNote + `<div class="map-leg" onclick="focusRecLeg('${r.id}')"><span class="leg-no" style="border-color:${color};color:${color}">${g.jobs.indexOf(r) + 1}</span>${r.scheduled_time ? '<strong>' + fmtRecTime(r.scheduled_time) + '</strong> · ' : ''}${recTypeLabel(r.job_type)}: <strong>${escHtml(shortAddr(r.pickup_address))}</strong> → <strong>${escHtml(shortAddr(r.dropoff_address))}</strong>${legInfo}${warn}</div>`;
+      legsHtml += linkNote + `<div class="map-leg" onclick="focusRecLeg('${r.id}')"><span class="leg-no" style="border-color:${jc};color:${jc};background:${jc}1a">${g.jobs.indexOf(r) + 1}</span>${r.scheduled_time ? '<strong>' + fmtRecTime(r.scheduled_time) + '</strong> · ' : ''}${recTypeLabel(r.job_type)}: <strong>${escHtml(shortAddr(r.pickup_address))}</strong> → <strong>${escHtml(shortAddr(r.dropoff_address))}</strong>${legInfo}${warn}</div>`;
       prev = r;
     }
     sideHtml += `<div class="map-driver-card" style="border-left-color:${color}">
