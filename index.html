@@ -497,7 +497,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
     </div>
     <div class="form-grid">
       <div class="form-row"><label>Type</label>
-        <select id="r-type">
+        <select id="r-type" onchange="updateRecAddressRows(true)">
           <option value="collection">🚛 Collection (bring vehicle in)</option>
           <option value="delivery">📦 Delivery (take vehicle out)</option>
         </select>
@@ -513,8 +513,8 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
       <div class="form-row"><label>Registration</label><input id="r-reg" placeholder="AB12 CDE" style="text-transform:uppercase"></div>
     </div>
     <div class="form-row"><label>Vehicle</label><input id="r-vehicle" placeholder="Ford Focus 1.0"></div>
-    <div class="form-row"><label>Pick up from</label><input id="r-pickup" placeholder="1 High Street, Liverpool L1 1AA"></div>
-    <div class="form-row"><label>Deliver to</label><input id="r-dropoff" placeholder="TRT Motors, Liverpool"></div>
+    <div class="form-row" id="row-cust-addr"><label id="lbl-cust-addr">Collect from — customer address</label><input id="r-cust-addr" placeholder="1 High Street, Liverpool L1 1AA"></div>
+    <div class="form-row" id="row-base"><label id="lbl-base">Return to base</label><select id="r-base"></select></div>
     <div class="form-row"><label>Notes</label><input id="r-notes" placeholder="Keys with reception, non-runner, needs flatbed…"></div>
     <div class="modal-actions">
       <button class="btn" onclick="closeModal('rec-modal')">Cancel</button>
@@ -923,6 +923,7 @@ function renderJobs() {
         </span>
         <select class="stage-select" onchange="updateStage('${j.id}', this.value)">${opts}</select>
         ${weekSelectHTML(j)}
+        <button class="btn-link" onclick="bookRecoveryFor('${j.id}')" title="Book a recovery for this job">🚚</button>
         <a href="${trackerUrl}" target="_blank" class="btn-link" title="Customer tracker link">🔗</a>
         <button class="btn-icon" onclick="copyLink('${trackerUrl}')" title="Copy tracker link">📋</button>
         <button class="btn-icon" onclick="removeJob('${j.id}', '${(j.name||'').replace(/'/g,"\\'")}', '${j.reg||''}')" title="Remove job" style="color:var(--red)">✕</button>
@@ -1180,6 +1181,7 @@ function renderDetail() {
     <div class="detail-actions">
       <select class="detail-select" onchange="updateStageFromDetail('${j.id}', this.value)">${opts}</select>
       ${weekSelectHTML(j)}
+      <button class="detail-close" onclick="document.getElementById('detail-modal').classList.remove('open');bookRecoveryFor('${j.id}')">🚚 Recovery</button>
       <button class="detail-close" onclick="copyLink('${trackerUrl}')">📋 Tracker</button>
       <button class="detail-del" onclick="removeJob('${j.id}', '${(j.name||'').replace(/'/g,"\\'")}', '${j.reg||''}')">Remove</button>
     </div>`;
@@ -1674,6 +1676,18 @@ let recEditId = null;
 let recMap = null, recMapLayers = [], recMapToken = 0, recMapFitKey = '';
 const routeCache = {};
 const DRIVER_PALETTE = ['#1a1aff','#1D9E75','#BA7517','#A32D2D','#5B2D87','#0C447C','#C2410C','#16324F','#B9257F','#3B7A0A'];
+// Hard-wired bases — collections come back to one of these, deliveries go out from one.
+const BASES = [
+  { key: 'TRT',    name: 'TRT Motors',        addr: '40 Fox Street, Liverpool, L3 3BQ',                        lat: 53.41659,  lng: -2.97672 },
+  { key: 'NW_U',   name: 'Nationwide Unit',   addr: '18 Greenhey Place, Skelmersdale, WN8 9SA',                lat: 53.545014, lng: -2.789203 },
+  { key: 'NW_O',   name: 'Nationwide Office', addr: '901 Merlin Park, Ringtail Road, Burscough, Lancashire, L40 8JY', lat: 53.598389, lng: -2.863106 },
+];
+function baseLabel(b) { return b.name + ', ' + b.addr; }
+function baseFromAddress(addr) {
+  if (!addr) return null;
+  const a = String(addr).toLowerCase();
+  return BASES.find(b => a.indexOf(b.name.toLowerCase()) === 0 || a.indexOf(b.addr.toLowerCase().split(',')[0]) !== -1) || null;
+}
 const REC_STATUSES = [
   ['booked', 'Booked'],
   ['in_progress', 'Out on the job'],
@@ -1807,7 +1821,16 @@ function renderRecCal() {
   el.innerHTML = `<div class="rec-grid">${cols.join('')}</div>`;
 }
 // — BOOK / EDIT MODAL —
-function openRecModal(editId) {
+function updateRecAddressRows(swap) {
+  const type = document.getElementById('r-type').value;
+  document.getElementById('lbl-cust-addr').textContent = type === 'delivery' ? 'Deliver to — customer address' : 'Collect from — customer address';
+  document.getElementById('lbl-base').textContent = type === 'delivery' ? 'From base' : 'Return to base';
+  const custRow = document.getElementById('row-cust-addr'), baseRow = document.getElementById('row-base');
+  // base row sits first for deliveries (base → customer), second for collections (customer → base)
+  if (type === 'delivery') custRow.parentNode.insertBefore(baseRow, custRow);
+  else baseRow.parentNode.insertBefore(custRow, baseRow);
+}
+function openRecModal(editId, prefillJobId) {
   recEditId = editId || null;
   const r = editId ? recJobs.find(x => x.id === editId) : null;
   document.getElementById('rec-modal-title').textContent = r ? 'Edit recovery' : 'Book a recovery';
@@ -1820,15 +1843,31 @@ function openRecModal(editId) {
   drvSel.innerHTML = '<option value="">— Unallocated —</option>' +
     recDrivers.filter(d => d.active !== false).map(d =>
       `<option value="${d.id}"${r && r.driver_id === d.id ? ' selected' : ''}>${escHtml(d.name)}${d.kind === 'company' ? ' (company)' : ''}</option>`).join('');
+  document.getElementById('r-base').innerHTML = BASES.map(b =>
+    `<option value="${b.key}">${escHtml(b.name)} — ${escHtml(b.addr)}</option>`).join('');
   document.getElementById('r-type').value = r ? r.job_type : 'collection';
   document.getElementById('r-date').value = r ? r.scheduled_date : todayISO();
   document.getElementById('r-time').value = r ? fmtRecTime(r.scheduled_time) : '';
   document.getElementById('r-name').value = r ? (r.customer_name || '') : '';
   document.getElementById('r-reg').value = r ? (r.reg || '') : '';
   document.getElementById('r-vehicle').value = r ? (r.vehicle || '') : '';
-  document.getElementById('r-pickup').value = r ? (r.pickup_address || '') : '';
-  document.getElementById('r-dropoff').value = r ? (r.dropoff_address || '') : '';
+  // split stored pickup/dropoff back into customer address + base
+  let custAddr = '', baseKey = BASES[0].key;
+  if (r) {
+    const baseSide = r.job_type === 'delivery' ? r.pickup_address : r.dropoff_address;
+    const custSide = r.job_type === 'delivery' ? r.dropoff_address : r.pickup_address;
+    const b = baseFromAddress(baseSide);
+    if (b) baseKey = b.key;
+    custAddr = custSide || '';
+  }
+  document.getElementById('r-cust-addr').value = custAddr;
+  document.getElementById('r-base').value = baseKey;
   document.getElementById('r-notes').value = r ? (r.notes || '') : '';
+  updateRecAddressRows();
+  if (prefillJobId && !r) {
+    jobSel.value = prefillJobId;
+    recPrefillFromJob(prefillJobId);
+  }
   openModal('rec-modal');
 }
 function recPrefillFromJob(jobId) {
@@ -1837,37 +1876,47 @@ function recPrefillFromJob(jobId) {
   document.getElementById('r-name').value = j.name || '';
   document.getElementById('r-reg').value = j.reg || '';
   document.getElementById('r-vehicle').value = j.vehicle || '';
-  const type = document.getElementById('r-type').value;
-  const garage = 'TRT Motors, Liverpool';
-  if (type === 'delivery') {
-    document.getElementById('r-pickup').value = garage;
-    document.getElementById('r-dropoff').value = j.address || '';
-  } else {
-    document.getElementById('r-pickup').value = j.address || '';
-    document.getElementById('r-dropoff').value = garage;
-  }
+  document.getElementById('r-cust-addr').value = j.address || '';
+}
+// jump from a job card on the main dashboard straight into booking a recovery
+async function bookRecoveryFor(jobId) {
+  showRecovery();
+  await loadRecovery(true);
+  openRecModal(null, jobId);
 }
 async function saveRecJob() {
+  const type = document.getElementById('r-type').value;
+  const base = BASES.find(b => b.key === document.getElementById('r-base').value) || BASES[0];
+  const custAddr = document.getElementById('r-cust-addr').value.trim();
   const row = {
     job_id: document.getElementById('r-job').value || null,
-    job_type: document.getElementById('r-type').value,
+    job_type: type,
     driver_id: document.getElementById('r-driver').value || null,
     scheduled_date: document.getElementById('r-date').value,
     scheduled_time: document.getElementById('r-time').value || null,
     customer_name: document.getElementById('r-name').value.trim() || null,
     reg: document.getElementById('r-reg').value.trim().toUpperCase() || null,
     vehicle: document.getElementById('r-vehicle').value.trim() || null,
-    pickup_address: document.getElementById('r-pickup').value.trim() || null,
-    dropoff_address: document.getElementById('r-dropoff').value.trim() || null,
     notes: document.getElementById('r-notes').value.trim() || null,
     updated_at: new Date().toISOString(),
   };
   if (!row.scheduled_date) { alert('Please pick a date.'); return; }
-  if (!row.pickup_address || !row.dropoff_address) { alert('Please fill in both the pick up and deliver to addresses.'); return; }
+  if (!custAddr) { alert('Please fill in the customer address.'); return; }
+  // delivery: base → customer · collection: customer → base
+  if (type === 'delivery') {
+    row.pickup_address = baseLabel(base);
+    row.dropoff_address = custAddr;
+  } else {
+    row.pickup_address = custAddr;
+    row.dropoff_address = baseLabel(base);
+  }
   const old = recEditId ? recJobs.find(x => x.id === recEditId) : null;
   // re-geocode any address that changed
   if (!old || old.pickup_address !== row.pickup_address) { row.pickup_lat = null; row.pickup_lng = null; }
   if (!old || old.dropoff_address !== row.dropoff_address) { row.dropoff_lat = null; row.dropoff_lng = null; }
+  // bases have hard-wired coordinates — no geocoding needed for that side
+  if (type === 'delivery') { row.pickup_lat = base.lat; row.pickup_lng = base.lng; }
+  else { row.dropoff_lat = base.lat; row.dropoff_lng = base.lng; }
   let saved, error;
   if (recEditId) ({ data: saved, error } = await db.from('recovery_jobs').update(row).eq('id', recEditId).select());
   else ({ data: saved, error } = await db.from('recovery_jobs').insert([row]).select());
