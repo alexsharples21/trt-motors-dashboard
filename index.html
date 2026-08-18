@@ -505,8 +505,11 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
       <div class="form-row"><label>Driver / company</label><select id="r-driver"><option value="">— Unallocated —</option></select></div>
     </div>
     <div class="form-grid">
-      <div class="form-row"><label>Date</label><input type="date" id="r-date"></div>
+      <div class="form-row"><label>Date</label><input type="date" id="r-date" onchange="populateFollowsOptions()"></div>
       <div class="form-row"><label>Time</label><input type="time" id="r-time"></div>
+    </div>
+    <div class="form-row"><label>Follows on from (optional — driver goes straight there from that job, no return to base in between)</label>
+      <select id="r-follows"><option value="">— No, starts fresh —</option></select>
     </div>
     <div class="form-grid">
       <div class="form-row"><label>Customer</label><input id="r-name" placeholder="Mrs Jane Smith"></div>
@@ -1781,6 +1784,8 @@ function recTile(r) {
     <div class="rec-route"><strong>${escHtml(shortAddr(r.pickup_address))}</strong> → <strong>${escHtml(shortAddr(r.dropoff_address))}</strong></div>
     ${d ? `<div class="rec-driver-row"><span class="driver-dot" style="background:${driverColor(d)}"></span>${escHtml(d.name)}</div>`
         : `<div class="rec-nodriver">⚠ No driver allocated</div>`}
+    ${(function(){ const p = r.follows_id ? recJobs.find(x => x.id === r.follows_id) : null;
+       return p ? `<div class="rec-note-flag">↳ straight after ${escHtml(p.reg || shortAddr(p.pickup_address))}</div>` : ''; })()}
     ${r.notes ? `<div class="rec-note-flag">📝 ${escHtml(r.notes.length > 34 ? r.notes.slice(0, 34) + '…' : r.notes)}</div>` : ''}
   </div>`;
 }
@@ -1821,6 +1826,21 @@ function renderRecCal() {
   el.innerHTML = `<div class="rec-grid">${cols.join('')}</div>`;
 }
 // — BOOK / EDIT MODAL —
+function recJobLabel(r) {
+  return (r.scheduled_time ? fmtRecTime(r.scheduled_time) + ' · ' : '') +
+    recTypeLabel(r.job_type) + ': ' + (r.reg ? r.reg + ' — ' : '') + shortAddr(r.pickup_address) + ' → ' + shortAddr(r.dropoff_address);
+}
+function populateFollowsOptions() {
+  const sel = document.getElementById('r-follows');
+  if (!sel) return;
+  const date = document.getElementById('r-date').value;
+  const cur = sel.value;
+  const candidates = recJobs.filter(r =>
+    r.scheduled_date === date && r.id !== recEditId && r.status !== 'cancelled' &&
+    !(recEditId && r.follows_id === recEditId));   // don't allow A follows B while B follows A
+  sel.innerHTML = '<option value="">— No, starts fresh —</option>' +
+    candidates.map(r => `<option value="${r.id}"${cur === r.id ? ' selected' : ''}>${escHtml(recJobLabel(r))}</option>`).join('');
+}
 function updateRecAddressRows(swap) {
   const type = document.getElementById('r-type').value;
   document.getElementById('lbl-cust-addr').textContent = type === 'delivery' ? 'Deliver to — customer address' : 'Collect from — customer address';
@@ -1863,6 +1883,8 @@ function openRecModal(editId, prefillJobId) {
   document.getElementById('r-cust-addr').value = custAddr;
   document.getElementById('r-base').value = baseKey;
   document.getElementById('r-notes').value = r ? (r.notes || '') : '';
+  populateFollowsOptions();
+  document.getElementById('r-follows').value = r && r.follows_id ? r.follows_id : '';
   updateRecAddressRows();
   if (prefillJobId && !r) {
     jobSel.value = prefillJobId;
@@ -1898,8 +1920,14 @@ async function saveRecJob() {
     reg: document.getElementById('r-reg').value.trim().toUpperCase() || null,
     vehicle: document.getElementById('r-vehicle').value.trim() || null,
     notes: document.getElementById('r-notes').value.trim() || null,
+    follows_id: document.getElementById('r-follows').value || null,
     updated_at: new Date().toISOString(),
   };
+  // a linked job naturally has the same driver as the job it follows
+  if (row.follows_id && !row.driver_id) {
+    const pred = recJobs.find(x => x.id === row.follows_id);
+    if (pred && pred.driver_id) row.driver_id = pred.driver_id;
+  }
   if (!row.scheduled_date) { alert('Please pick a date.'); return; }
   if (!custAddr) { alert('Please fill in the customer address.'); return; }
   // delivery: base → customer · collection: customer → base
@@ -1979,6 +2007,10 @@ function renderRecDetail() {
   chips.push(d ? `<span class="chip"><span class="driver-dot" style="background:${driverColor(d)};display:inline-block;vertical-align:-1px"></span> <strong>${escHtml(d.name)}</strong>${d.phone ? ' · ' + escHtml(d.phone) : ''}</span>`
               : `<span class="chip" style="background:var(--red-light);border-color:var(--red);color:var(--red)">⚠ No driver allocated</span>`);
   chips.push(`<span class="chip">Status: <strong>${recStatusLabel(r.status)}</strong></span>`);
+  const pred = r.follows_id ? recJobs.find(x => x.id === r.follows_id) : null;
+  if (pred) chips.push(`<span class="chip" style="background:#EDEBFF;border-color:#B7B0F0;color:#3B2DA3">↳ Straight after <strong>${escHtml(pred.reg || shortAddr(pred.pickup_address))}</strong></span>`);
+  const next = recJobs.find(x => x.follows_id === r.id);
+  if (next) chips.push(`<span class="chip" style="background:#EDEBFF;border-color:#B7B0F0;color:#3B2DA3">Then straight to <strong>${escHtml(next.reg || shortAddr(next.pickup_address))}</strong> ↴</span>`);
   const geoWarn = needsGeocode(r)
     ? `<div class="hint-box" style="margin-bottom:12px">📍 Still locating one of the addresses for the map — if it never appears, make the address more specific (add the town / postcode) via Edit.</div>` : '';
   const statusOpts = REC_STATUSES.map(s => `<option value="${s[0]}"${r.status === s[0] ? ' selected' : ''}>${s[1]}</option>`).join('');
@@ -2159,6 +2191,28 @@ function recMarkerIcon(color, label) {
     iconAnchor: [14, 28],
   });
 }
+// Order a driver's day: earliest first, but any job linked with "follows on
+// from" slots in directly after its predecessor, however its time is set.
+function orderDriverJobs(jobsArr) {
+  const byId = {};
+  jobsArr.forEach(j => { byId[j.id] = j; });
+  const followers = {};
+  jobsArr.forEach(j => {
+    if (j.follows_id && byId[j.follows_id]) (followers[j.follows_id] = followers[j.follows_id] || []).push(j);
+  });
+  const byTime = (a, b) => String(a.scheduled_time || '99').localeCompare(String(b.scheduled_time || '99'));
+  const roots = jobsArr.filter(j => !(j.follows_id && byId[j.follows_id])).sort(byTime);
+  const out = [], seen = {};
+  function add(j) {
+    if (seen[j.id]) return;
+    seen[j.id] = true;
+    out.push(j);
+    (followers[j.id] || []).sort(byTime).forEach(add);
+  }
+  roots.forEach(add);
+  jobsArr.slice().sort(byTime).forEach(add);   // safety net for any loops
+  return out;
+}
 function clearRecMapLayers() {
   recMapLayers.forEach(l => { try { recMap.removeLayer(l); } catch (e) {} });
   recMapLayers = [];
@@ -2191,18 +2245,29 @@ async function renderRecMap() {
   let sideHtml = '';
   for (const g of groups) {
     const color = g.driver ? driverColor(g.driver) : '#888888';
+    g.jobs = orderDriverJobs(g.jobs);
     let stopNo = 0;
     let prev = null;
     let legsHtml = '';
     for (const r of g.jobs) {
+      const linked = !!(r.follows_id && prev && r.follows_id === prev.id);
       const hasPickup = r.pickup_lat != null && r.pickup_lng != null;
       const hasDrop = r.dropoff_lat != null && r.dropoff_lng != null;
       let legInfo = '';
-      // dashed "reposition" line from previous drop-off to this pick up
+      // travelling leg from previous drop-off to this pick up.
+      // explicitly linked ("follows on from") legs draw stronger — that drive
+      // definitely happened; unlinked ones stay faint dashes (assumed).
       if (prev && hasPickup && prev.dropoff_lat != null) {
         const rep = await fetchRoute(prev.dropoff_lat, prev.dropoff_lng, r.pickup_lat, r.pickup_lng);
         if (token !== recMapToken) return;
-        recMapLayers.push(L.polyline(rep.coords, { color, weight: 3, opacity: 0.45, dashArray: '6 8' }).addTo(recMap));
+        const leg = L.polyline(rep.coords, linked
+          ? { color, weight: 4, opacity: 0.8, dashArray: '10 6' }
+          : { color, weight: 3, opacity: 0.4, dashArray: '3 9' }).addTo(recMap);
+        if (linked) {
+          leg.bindPopup(`<strong>Straight on</strong> — no return to base<br>${escHtml(shortAddr(prev.dropoff_address))} → ${escHtml(shortAddr(r.pickup_address))}${rep.km ? '<br>' + (rep.km * 0.621371).toFixed(0) + ' mi · ~' + Math.round(rep.mins) + ' min' : ''}`);
+          rep.coords.forEach(c => allBounds.push(c));
+        }
+        recMapLayers.push(leg);
       }
       if (hasPickup && hasDrop) {
         const route = await fetchRoute(r.pickup_lat, r.pickup_lng, r.dropoff_lat, r.dropoff_lng);
@@ -2228,7 +2293,8 @@ async function renderRecMap() {
         allBounds.push([r.dropoff_lat, r.dropoff_lng]);
       }
       const warn = (!hasPickup || !hasDrop) ? ` <span class="map-warn">⚠ address not located yet</span>` : '';
-      legsHtml += `<div class="map-leg" onclick="focusRecLeg('${r.id}')"><span class="leg-no" style="border-color:${color};color:${color}">${g.jobs.indexOf(r) + 1}</span>${r.scheduled_time ? '<strong>' + fmtRecTime(r.scheduled_time) + '</strong> · ' : ''}${recTypeLabel(r.job_type)}: <strong>${escHtml(shortAddr(r.pickup_address))}</strong> → <strong>${escHtml(shortAddr(r.dropoff_address))}</strong>${legInfo}${warn}</div>`;
+      const linkNote = linked ? `<div style="font-size:10px;color:var(--muted);padding-left:20px">↳ straight on from ${escHtml(prev.reg || shortAddr(prev.dropoff_address))} — no return to base</div>` : '';
+      legsHtml += linkNote + `<div class="map-leg" onclick="focusRecLeg('${r.id}')"><span class="leg-no" style="border-color:${color};color:${color}">${g.jobs.indexOf(r) + 1}</span>${r.scheduled_time ? '<strong>' + fmtRecTime(r.scheduled_time) + '</strong> · ' : ''}${recTypeLabel(r.job_type)}: <strong>${escHtml(shortAddr(r.pickup_address))}</strong> → <strong>${escHtml(shortAddr(r.dropoff_address))}</strong>${legInfo}${warn}</div>`;
       prev = r;
     }
     sideHtml += `<div class="map-driver-card" style="border-left-color:${color}">
