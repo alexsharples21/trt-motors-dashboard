@@ -689,7 +689,17 @@ async function showAdmin() {
   await refreshJobs();
   setInterval(refreshJobs, 30000);
 }
+// Skip auto-refresh redraws while the user is mid-task: a popup is open,
+// they're typing in a field, or they've picked something from a dropdown.
+function uiBusy() {
+  const openModal = document.querySelector('.modal-overlay.open, .detail-overlay.open');
+  if (openModal) return true;
+  const a = document.activeElement;
+  if (a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.tagName === 'SELECT')) return true;
+  return false;
+}
 async function refreshJobs() {
+  if (uiBusy()) return;   // don't yank the page out from under the user
   // remember previous state so we can auto-log changes made by the backend
   const prev = {};
   jobs.forEach(j => { prev[j.id] = { stage: j.stage, auth: !!j.auth_confirmed }; });
@@ -1661,7 +1671,7 @@ let recTab = 'cal';
 let recWeek = mondayISO(new Date());
 let recDetailId = null, recNotes = [];
 let recEditId = null;
-let recMap = null, recMapLayers = [], recMapToken = 0;
+let recMap = null, recMapLayers = [], recMapToken = 0, recMapFitKey = '';
 const routeCache = {};
 const DRIVER_PALETTE = ['#1a1aff','#1D9E75','#BA7517','#A32D2D','#5B2D87','#0C447C','#C2410C','#16324F','#B9257F','#3B7A0A'];
 const REC_STATUSES = [
@@ -2179,7 +2189,13 @@ async function renderRecMap() {
   }
   if (token !== recMapToken) return;
   side.innerHTML = sideHtml;
-  if (allBounds.length) recMap.fitBounds(allBounds, { padding: [40, 40], maxZoom: 13 });
+  // only auto-zoom when the date/filter/jobs actually changed — a background
+  // refresh shouldn't move the map while the user is looking at it
+  const fitKey = date + '|' + drvFilter + '|' + dayJobs.map(r => r.id).sort().join(',');
+  if (allBounds.length && fitKey !== recMapFitKey) {
+    recMapFitKey = fitKey;
+    recMap.fitBounds(allBounds, { padding: [40, 40], maxZoom: 13 });
+  }
 }
 function focusRecLeg(id) {
   const r = recJobs.find(x => x.id === id);
