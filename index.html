@@ -79,6 +79,8 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .job-name { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .job-vehicle { font-size: 12px; color: var(--muted); margin-top: 2px; }
 .job-addr { font-size: 11px; color: var(--faint); margin-top: 1px; }
+.job-addr a { color: var(--muted); text-decoration: none; }
+.job-addr a:hover { color: var(--blue); }
 .progress-track { display: flex; gap: 2px; height: 4px; border-radius: 2px; margin-bottom: 6px; }
 .pip { flex: 1; height: 4px; border-radius: 2px; background: #e0dedd; }
 .pip.done { background: var(--green); }
@@ -139,12 +141,14 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .stage-date { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; white-space: nowrap; }
 .in-prog { font-size: 10px; background: #E6F1FB; color: var(--blue); padding: 1px 6px; border-radius: 10px; font-weight: 600; margin-left: 6px; }
 .detail-refs { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; background: var(--bg); border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; }
+.detail-refs a { color: var(--blue); text-decoration: none; }
 .detail-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
 .detail-select { flex: 1; font-size: 13px; padding: 8px 10px; border: 1px solid var(--border-strong); border-radius: 8px; font-family: inherit; background: var(--card); }
 .detail-close { background: none; border: 1px solid var(--border-strong); border-radius: 8px; padding: 8px 14px; font-size: 13px; font-family: inherit; cursor: pointer; color: var(--muted); }
 .detail-del { background: none; border: 1px solid var(--red); border-radius: 8px; padding: 8px 14px; font-size: 13px; font-family: inherit; cursor: pointer; color: var(--red); }
 .section-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--faint); margin: 14px 0 6px; }
 .note-item { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; font-size: 13px; display: flex; gap: 10px; align-items: flex-start; }
+.note-item.driver-note { background: #FFF9F0; border-color: #FFD59B; }
 .note-body { flex: 1; white-space: pre-wrap; line-height: 1.45; }
 .note-time { font-size: 10px; color: var(--faint); font-family: 'DM Mono', monospace; margin-top: 3px; }
 .note-del { background: none; border: none; color: var(--faint); cursor: pointer; font-size: 13px; padding: 2px; }
@@ -190,6 +194,20 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .days-ok { background: var(--green-light); color: #0F6E56; }
 .days-warn { background: var(--amber-light); color: var(--amber); }
 .days-over { background: var(--red-light); color: var(--red); }
+/* REPAIR DATES TAB */
+.rd-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+.rd-row:last-child { border-bottom: none; }
+.rd-label { flex: 1; min-width: 0; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.rd-input { font-size: 12px; font-family: inherit; padding: 6px 8px; border: 1px solid var(--border-strong); border-radius: 6px; background: var(--card); width: 148px; flex-shrink: 0; }
+.rd-input:focus { outline: none; border-color: var(--blue); }
+.rd-input.is-manual { border-color: #E8C48A; background: var(--amber-light); }
+.rd-badge { font-size: 9px; padding: 1px 6px; border-radius: 10px; font-weight: 700; letter-spacing: 0.03em; }
+.rd-auto { background: #E6F1FB; color: var(--blue); }
+.rd-manual { background: var(--amber-light); color: var(--amber); }
+.rd-none { background: var(--bg); color: var(--faint); border: 1px solid var(--border); }
+.rd-revert { width: 30px; height: 30px; flex-shrink: 0; background: none; border: 1px solid var(--border-strong); border-radius: 6px; cursor: pointer; color: var(--muted); font-size: 14px; }
+.rd-revert:hover { border-color: var(--blue); color: var(--blue); }
+.rd-spacer { width: 30px; flex-shrink: 0; }
 .log-section { margin-top: 24px; }
 .log-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--faint); margin-bottom: 8px; }
 .log-box { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; max-height: 260px; overflow-y: auto; }
@@ -199,7 +217,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .log-auto { background: #E6F1FB; color: var(--blue); font-size: 10px; padding: 1px 6px; border-radius: 4px; font-weight: 600; white-space: nowrap; }
 .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
 .modal-overlay.open { display: flex; }
-.modal { background: var(--card); border-radius: var(--radius); padding: 24px; width: 100%; max-width: 440px; }
+.modal { background: var(--card); border-radius: var(--radius); padding: 24px; width: 100%; max-width: 440px; max-height: 92vh; overflow-y: auto; }
 .modal-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
 .form-row { margin-bottom: 12px; }
 .form-row label { font-size: 12px; font-weight: 500; color: var(--muted); display: block; margin-bottom: 4px; }
@@ -283,8 +301,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .stage-content-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
 .tracker-contact { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; text-align: center; font-size: 13px; color: var(--muted); }
 .tracker-contact strong { color: var(--text); }
-.tracker-not-found { text-align: center; padding: 3rem 1rem; }
-.tracker-not-found h2 { font-size: 18px; margin-bottom: 8px; }
 /* VEHICLE RECOVERY */
 #recovery-view { display: none; }
 .rec-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; align-items: start; }
@@ -301,6 +317,9 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .rec-type { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 1px 6px; border-radius: 10px; }
 .rec-type.coll { background: var(--amber-light); color: var(--amber); }
 .rec-type.del { background: var(--green-light); color: #0F6E56; }
+.rec-vehicle { font-size: 10px; color: var(--muted); font-weight: 500; margin-top: 1px; }
+.rec-phone { font-size: 10px; color: var(--muted); font-family: 'DM Mono', monospace; margin-top: 2px; }
+.rec-cost { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 700; color: #16324F; background: rgba(255,255,255,0.75); border: 1px solid var(--border); border-radius: 10px; padding: 1px 7px; display: inline-block; margin-top: 4px; }
 .rec-route { font-size: 10px; color: var(--muted); margin-top: 3px; line-height: 1.35; }
 .rec-route strong { color: var(--text); }
 .rec-driver-row { display: flex; align-items: center; gap: 5px; margin-top: 4px; font-size: 10px; font-weight: 600; }
@@ -321,6 +340,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .rec-queue-item .cal-reg { margin-bottom: 0; }
 .rec-queue-info { flex: 1; min-width: 0; }
 .rec-queue-name { font-size: 12px; font-weight: 600; line-height: 1.3; }
+.rec-queue-veh { font-size: 11px; color: var(--text); font-weight: 500; }
 .rec-queue-addr { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rec-queue-go { font-size: 11px; font-weight: 600; color: var(--blue); white-space: nowrap; }
 @media (max-width: 800px) { .rec-queues { grid-template-columns: 1fr; } }
@@ -350,6 +370,8 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   .stats-grid { grid-template-columns: repeat(2,1fr); }
   .form-grid { grid-template-columns: 1fr; }
   .check-grid { grid-template-columns: 1fr; }
+  .rd-row { flex-wrap: wrap; }
+  .rd-input { width: 100%; }
 }
 </style>
 </head>
@@ -485,6 +507,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
         <button class="btn" onclick="navRecWeek(1)">→</button>
         <button class="btn" onclick="goRecThisWeek()">Today</button>
       </div>
+      <div id="rec-totals"></div>
       <div class="week-intro" id="rec-intro"></div>
       <div id="rec-cal-body"></div>
     </div>
@@ -539,10 +562,14 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
       <div class="form-row"><label>Customer</label><input id="r-name" placeholder="Mrs Jane Smith"></div>
       <div class="form-row"><label>Registration</label><input id="r-reg" placeholder="AB12 CDE" style="text-transform:uppercase"></div>
     </div>
-    <div class="form-row"><label>Vehicle</label><input id="r-vehicle" placeholder="Ford Focus 1.0"></div>
+    <div class="form-grid">
+      <div class="form-row"><label>Vehicle (make &amp; model)</label><input id="r-vehicle" placeholder="Ford Focus 1.0"></div>
+      <div class="form-row"><label>Customer phone</label><input id="r-phone" type="tel" placeholder="07123 456789"></div>
+    </div>
     <div class="form-row" id="row-cust-addr"><label id="lbl-cust-addr">Collect from — customer address</label><input id="r-cust-addr" placeholder="1 High Street, Liverpool L1 1AA"></div>
     <div class="form-row" id="row-base"><label id="lbl-base">Return to base</label><select id="r-base"></select></div>
-    <div class="form-row"><label>Notes</label><input id="r-notes" placeholder="Keys with reception, non-runner, needs flatbed…"></div>
+    <div class="form-row"><label>Recovery cost (£) — what this movement costs us</label><input id="r-cost" type="number" step="0.01" min="0" placeholder="0.00"></div>
+    <div class="form-row"><label>Driver notes</label><input id="r-notes" placeholder="Keys with reception, non-runner, needs flatbed…"></div>
     <div class="modal-actions">
       <button class="btn" onclick="closeModal('rec-modal')">Cancel</button>
       <button class="btn btn-primary" id="rec-save-btn" onclick="saveRecJob()">Book recovery</button>
@@ -552,7 +579,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 <!-- DRIVERS MODAL -->
 <div class="modal-overlay" id="drivers-modal">
   <div class="modal" style="max-width:480px">
-    <div class="modal-title">Recovery drivers & companies</div>
+    <div class="modal-title">Recovery drivers &amp; companies</div>
     <div id="drivers-list"></div>
     <div class="section-label">Add new</div>
     <div class="add-part-row">
@@ -581,7 +608,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
       <div class="form-row"><label>Customer name</label><input id="f-name" placeholder="Mrs Jane Smith"></div>
       <div class="form-row"><label>Registration</label><input id="f-reg" placeholder="AB12 CDE" style="text-transform:uppercase"></div>
     </div>
-    <div class="form-row"><label>Vehicle</label><input id="f-vehicle" placeholder="Ford Focus 1.0"></div>
+    <div class="form-grid">
+      <div class="form-row"><label>Vehicle (make &amp; model)</label><input id="f-vehicle" placeholder="Ford Focus 1.0"></div>
+      <div class="form-row"><label>Customer phone</label><input id="f-mobile" type="tel" placeholder="07123 456789"></div>
+    </div>
     <div class="form-row"><label>Address</label><input id="f-addr" placeholder="1 High Street, Liverpool, L1 1AA"></div>
     <div class="form-grid">
       <div class="form-row"><label>Invoice number</label><input id="f-inv" placeholder="02603"></div>
@@ -598,9 +628,8 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 // ─── CONFIG ──────────────────────────────────────────────
 const SUPABASE_URL = 'https://kgohkilvxqjfadhyasyk.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_i2I2Rtl_1skzxqBGXxpjqA_icdg62u6';
-const SITE_URL = window.location.origin;
 const PHOTO_BUCKET = 'job-photos';
-// ─── STAGES ("Estimated" is now a tick-box, not a stage) ─
+// ─── STAGES ("Estimated" is a tick-box, not a stage) ─────
 const STAGES = [
   { label: 'New instruction',        sub: 'Job instruction received from ACG' },
   { label: 'Ready for collection',   sub: 'Arranging collection of your vehicle' },
@@ -613,10 +642,11 @@ const STAGES = [
 ];
 const READY_COLLECT_STAGE = STAGES.findIndex(s => s.label === 'Ready for collection');
 const COLL_DELIVERY_STAGE = STAGES.findIndex(s => s.label === 'Collection / Delivery');
-const ON_SITE_STAGE  = STAGES.findIndex(s => s.label === 'On site');
+const ON_SITE_STAGE   = STAGES.findIndex(s => s.label === 'On site');
 const IN_REPAIR_STAGE = STAGES.findIndex(s => s.label === 'In repair');
-const INVOICED_STAGE = STAGES.findIndex(s => s.label === 'Invoiced');
-const COMPLETE_STAGE = STAGES.findIndex(s => s.label === 'Complete');
+const NEEDS_INV_STAGE = STAGES.findIndex(s => s.label === 'Needs Invoicing');
+const INVOICED_STAGE  = STAGES.findIndex(s => s.label === 'Invoiced');
+const COMPLETE_STAGE  = STAGES.findIndex(s => s.label === 'Complete');
 const LAST_STAGE = STAGES.length - 1;
 const FLAG_LABELS = {
   is_estimated: 'Estimated',
@@ -626,12 +656,40 @@ const FLAG_LABELS = {
   needs_supplementary: 'Needs a supplementary',
   supplementary_sent: 'Supplementary sent'
 };
+// ─── REPAIR DATES ────────────────────────────────────────
+// Stored on the job as a single jsonb column `repair_dates`:
+//   { estimated: { d: '2026-09-15', m: false }, ... }
+//   d = the date · m = true when it was typed in by hand.
+// Anything with m:true is NEVER touched by the automation again
+// until the ↺ revert button is pressed.
+const REPAIR_DATE_FIELDS = [
+  { key: 'instructed',        label: 'Date instructed',              auto: 'Job added to the dashboard' },
+  { key: 'estimated',         label: 'Date estimated',               auto: 'When "Estimated" is ticked' },
+  { key: 'authorised',        label: 'Date authorised',              auto: 'When authority lands from ACG' },
+  { key: 'supp_sent',         label: 'Date supplementary sent',      auto: 'When "Supplementary sent" is ticked' },
+  { key: 'supp_auth',         label: 'Date supplementary auth',      auto: 'From the authorised supplementary' },
+  { key: 'parts_onsite',      label: 'Date parts came on site',      auto: 'First part marked arrived' },
+  { key: 'last_part_onsite',  label: 'Date last part came on site',  auto: 'Last part arrived / "Parts on site" ticked' },
+  { key: 'repair_started',    label: 'Date repair started',          auto: 'Stage moved to "In repair"' },
+  { key: 'repairs_completed', label: 'Date repairs completed',       auto: 'Stage moved to "Collection / Delivery"' },
+  { key: 'customer_received', label: 'Date customer received vehicle', auto: 'Delivery completed / stage "Complete"' },
+  { key: 'invoiced',          label: 'Date invoiced',                auto: 'Stage moved to "Invoiced"' },
+];
+const RD_LABEL = {};
+REPAIR_DATE_FIELDS.forEach(f => { RD_LABEL[f.key] = f.label; });
+// flags that stamp a repair date the moment they're ticked
+const FLAG_DATE_KEYS = {
+  is_estimated: ['estimated'],
+  supplementary_sent: ['supp_sent'],
+  parts_on_site: ['parts_onsite', 'last_part_onsite'],
+};
 // ─── INIT ─────────────────────────────────────────────────
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let jobs = [];
 let events = [];               // persistent activity log (job_events table)
-let historyOk = true;          // false if migration hasn't been run yet
+let historyOk = true;          // false if the first migration hasn't been run
+let newColsOk = true;          // false if mobile / repair_dates columns are missing
 let currentFilter = 'active';
 let schedWeek = mondayISO(new Date());   // Monday of the week shown in the calendar
 let detailJobId = null;
@@ -674,6 +732,7 @@ function addDaysISO(iso, n) {
   return isoLocal(d);
 }
 function addWeeksISO(iso, n) { return addDaysISO(iso, 7 * n); }
+function dateOnly(v) { return v ? String(v).slice(0, 10) : null; }
 function fmtShortISO(iso) {
   if (!iso) return '';
   const d = new Date(String(iso).slice(0, 10) + 'T00:00:00');
@@ -711,6 +770,45 @@ function readyToStart(j) {
 function fmtGBP(n) {
   return '£' + Number(n).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
+// ─── ADDRESS TIDY-UP ──────────────────────────────────────
+// Addresses arrive from the ACG emails with bits repeated — the town twice,
+// the postcode twice, the customer's name stuck on the front. This strips all
+// of that out so one clean address is shown everywhere in the dashboard.
+const TITLES = /^(mr|mrs|miss|ms|dr|prof)\.?\s+/i;
+function normKey(s) { return String(s).toLowerCase().replace(/[^a-z0-9]/g, ''); }
+function cleanAddress(addr, name) {
+  if (!addr) return '';
+  let parts = String(addr).replace(/\s+/g, ' ').replace(/\s*,\s*/g, ',').split(',')
+    .map(s => s.trim()).filter(Boolean);
+  // drop a leading copy of the customer's name
+  if (name) {
+    const n = normKey(String(name).replace(TITLES, ''));
+    while (parts.length > 1 && n && normKey(parts[0].replace(TITLES, '')) === n) parts.shift();
+  }
+  const out = [], seen = {};
+  parts.forEach(p => {
+    const k = normKey(p);
+    if (!k || seen[k]) return;          // exact repeat anywhere in the address
+    seen[k] = true;
+    out.push(p);
+  });
+  // a postcode repeated inside another segment (e.g. "Liverpool L1 1AA, L1 1AA")
+  const pcs = {};
+  const kept = out.filter(p => {
+    const m = p.toUpperCase().match(/\b[A-Z]{1,2}[0-9][A-Z0-9]?\s*[0-9][A-Z]{2}\b/);
+    if (!m) return true;
+    const pc = m[0].replace(/\s+/g, '');
+    if (pcs[pc] && normKey(p) === pc.toLowerCase()) return false;   // bare duplicate postcode
+    pcs[pc] = true;
+    return true;
+  });
+  return kept.join(', ');
+}
+function jobAddress(j) { return cleanAddress(j && j.address, j && j.name); }
+function mapsLink(addr) {
+  return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(addr);
+}
+function telLink(num) { return 'tel:' + String(num).replace(/[^0-9+]/g, ''); }
 // ─── ADMIN ────────────────────────────────────────────────
 async function showAdmin() {
   document.getElementById('loading-view').style.display = 'none';
@@ -736,7 +834,7 @@ async function refreshJobs() {
   const { data, error } = await db.from('jobs_with_supplementary').select('*').order('added_date', { ascending: false });
   if (error) { console.error(error); return; }
   jobs = data || [];
-  // Merge schedule / checklist / history fields straight from the base table,
+  // Merge schedule / checklist fields straight from the base table,
   // so they're always present even if the view doesn't expose them.
   const { data: extra, error: exErr } = await db.from('jobs')
     .select('id,repair_week,repair_week_start,repair_day,stage_dates,repair_grand_total,labour_cost,paint_cost,parts_cost,specialist_cost,sub_total,vat_total,parts_ordered,parts_on_site,parts_on_backorder,backorder_part,is_estimated,needs_supplementary,supplementary_sent');
@@ -744,6 +842,17 @@ async function refreshJobs() {
     const map = {};
     extra.forEach(e => { map[e.id] = e; });
     jobs = jobs.map(j => Object.assign({}, j, map[j.id] || {}));
+  }
+  // New columns (phone + repair dates) in their own select, so an un-migrated
+  // database still loads everything else rather than falling over.
+  const { data: extra2, error: ex2Err } = await db.from('jobs').select('id,mobile,repair_dates');
+  if (!ex2Err && extra2) {
+    newColsOk = true;
+    const map2 = {};
+    extra2.forEach(e => { map2[e.id] = e; });
+    jobs = jobs.map(j => Object.assign({}, j, map2[j.id] || {}));
+  } else {
+    newColsOk = false;
   }
   // Auto-log any changes made elsewhere (backend, another device)
   jobs.forEach(j => {
@@ -753,7 +862,10 @@ async function refreshJobs() {
       logEvent(j, 'stage', 'Moved to "' + (STAGES[j.stage] ? STAGES[j.stage].label : j.stage) + '"', true);
       recordStageDate(j, j.stage);
     }
-    if (!p.auth && j.auth_confirmed) logEvent(j, 'auth', 'Repair authorised', true);
+    if (!p.auth && j.auth_confirmed) {
+      logEvent(j, 'auth', 'Repair authorised', true);
+      stampRepairDate(j, 'authorised', todayISO());
+    }
   });
   renderJobs();
   if (document.getElementById('week-view').style.display === 'block') renderWeek();
@@ -824,6 +936,125 @@ function pipClass(i, stage) {
   if (i === stage) return 'active';
   return '';
 }
+// ═══════════════════════════════════════════════════════════
+// REPAIR DATES ENGINE
+// ═══════════════════════════════════════════════════════════
+function rdGet(j, key) {
+  const rd = (j && j.repair_dates) || {};
+  return rd[key] || null;
+}
+function rdValue(j, key) { const e = rdGet(j, key); return e ? (e.d || '') : ''; }
+function rdManual(j, key) { const e = rdGet(j, key); return !!(e && e.m); }
+// Dates we can work out from data the dashboard already holds.
+// Used to backfill jobs that were on the system before this feature existed.
+function autoRepairDates(j) {
+  const sd = j.stage_dates || {};
+  const out = {};
+  if (j.added_date) out.instructed = dateOnly(j.added_date);
+  if (sd[IN_REPAIR_STAGE]) out.repair_started = dateOnly(sd[IN_REPAIR_STAGE]);
+  const finished = sd[COLL_DELIVERY_STAGE] || sd[NEEDS_INV_STAGE];
+  if (finished) out.repairs_completed = dateOnly(finished);
+  if (sd[COMPLETE_STAGE]) out.customer_received = dateOnly(sd[COMPLETE_STAGE]);
+  if (sd[INVOICED_STAGE]) out.invoiced = dateOnly(sd[INVOICED_STAGE]);
+  if (j.latest_supplementary_date) out.supp_auth = dateOnly(j.latest_supplementary_date);
+  // a completed delivery recovery is the best evidence the customer got the car back
+  const plate = (j.reg || '').replace(/\s/g, '').toUpperCase();
+  const del = recJobs.find(r => r.job_type === 'delivery' && r.status === 'done' &&
+    (r.job_id === j.id || (plate && (r.reg || '').replace(/\s/g, '').toUpperCase() === plate)));
+  if (del && del.scheduled_date && !out.customer_received) out.customer_received = dateOnly(del.scheduled_date);
+  return out;
+}
+// Extra sources that are only loaded while a job's popup is open:
+// its parts list and its full event history.
+function autoRepairDatesDetail(j) {
+  const out = autoRepairDates(j);
+  const arrived = detailParts.filter(p => p.arrived_date).map(p => dateOnly(p.arrived_date)).sort();
+  if (arrived.length) {
+    out.parts_onsite = out.parts_onsite || arrived[0];
+    out.last_part_onsite = arrived[arrived.length - 1];
+  }
+  const ev = detailEvents.slice().sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+  const firstEv = re => {
+    const e = ev.find(x => re.test(x.message || ''));
+    return e ? isoLocal(new Date(e.created_at)) : null;
+  };
+  out.estimated = out.estimated || firstEv(/^Estimated ✓/);
+  out.authorised = out.authorised || firstEv(/^Repair authorised$/);
+  out.supp_sent = out.supp_sent || firstEv(/^Supplementary sent ✓/);
+  const partsOn = firstEv(/^Parts on site ✓/);
+  if (partsOn) {
+    out.parts_onsite = out.parts_onsite || partsOn;
+    out.last_part_onsite = out.last_part_onsite || partsOn;
+  }
+  return out;
+}
+// Fill in any date we can work out that isn't already recorded.
+// Never overwrites something already there — manual or automatic.
+async function syncRepairDates(j, auto) {
+  if (!j || !newColsOk) return;
+  const rd = Object.assign({}, j.repair_dates || {});
+  let changed = false;
+  Object.keys(auto).forEach(k => {
+    if (!auto[k]) return;
+    if (rd[k] && rd[k].d) return;
+    rd[k] = { d: auto[k], m: false };
+    changed = true;
+  });
+  if (!changed) return;
+  j.repair_dates = rd;
+  const { error } = await db.from('jobs').update({ repair_dates: rd }).eq('id', j.id);
+  if (error) { newColsOk = false; console.error('repair_dates:', error.message); }
+}
+// Stamp one automatic date (used when a tick-box or stage move happens).
+// A manual override always wins and is left alone.
+async function stampRepairDate(j, key, iso) {
+  if (!j || !newColsOk) return;
+  const rd = Object.assign({}, j.repair_dates || {});
+  if (rd[key] && (rd[key].m || rd[key].d)) return;
+  rd[key] = { d: iso, m: false };
+  j.repair_dates = rd;
+  const { error } = await db.from('jobs').update({ repair_dates: rd }).eq('id', j.id);
+  if (error) { newColsOk = false; return; }
+  logEvent(j, 'date', RD_LABEL[key] + ' recorded automatically as ' + fmtShortISO(iso), true);
+}
+// Clear an automatic date again (a tick-box being un-ticked). Manual stays.
+async function unstampRepairDate(j, key) {
+  if (!j || !newColsOk) return;
+  const rd = Object.assign({}, j.repair_dates || {});
+  if (!rd[key] || rd[key].m) return;
+  delete rd[key];
+  j.repair_dates = rd;
+  await db.from('jobs').update({ repair_dates: rd }).eq('id', j.id);
+}
+// Manual override — typed into the date box on the Repair dates tab.
+async function setRepairDate(id, key, val) {
+  const j = jobs.find(x => x.id === id);
+  if (!j) return;
+  const rd = Object.assign({}, j.repair_dates || {});
+  if (!val) delete rd[key]; else rd[key] = { d: val, m: true };
+  const { error } = await db.from('jobs').update({ repair_dates: rd, updated_at: new Date().toISOString() }).eq('id', id);
+  if (error) {
+    newColsOk = false;
+    alert('Error saving date: ' + error.message + '\n\nIf it says the column doesn\'t exist, run supabase-migration-v2.sql in the Supabase SQL Editor.');
+    return;
+  }
+  j.repair_dates = rd;
+  logEvent(j, 'date', RD_LABEL[key] + (val ? ' set by hand to ' + fmtShortISO(val) : ' cleared'), false);
+  renderDetail();
+}
+// Drop a manual override and let the automation take the date back over.
+async function revertRepairDate(id, key) {
+  const j = jobs.find(x => x.id === id);
+  if (!j) return;
+  const rd = Object.assign({}, j.repair_dates || {});
+  delete rd[key];
+  const { error } = await db.from('jobs').update({ repair_dates: rd, updated_at: new Date().toISOString() }).eq('id', id);
+  if (error) { alert('Error: ' + error.message); return; }
+  j.repair_dates = rd;
+  await syncRepairDates(j, autoRepairDatesDetail(j));
+  logEvent(j, 'date', RD_LABEL[key] + ' reverted to the automatic date', false);
+  renderDetail();
+}
 // ─── WEEK SCHEDULING HELPERS ─────────────────────────────
 function weekOptionsFor(j) {
   const opts = [];
@@ -853,7 +1084,6 @@ async function setWeek(id, val) {
   const t = mondayISO(new Date()), n = addWeeksISO(t, 1);
   const legacy = val === t ? 'this' : val === n ? 'next' : null;   // keep old column in sync
   const j = jobs.find(x => x.id === id);
-  // if the job moves to a different week, its booked day no longer applies
   const keepDay = j && j.repair_day && val && mondayISO(new Date(j.repair_day + 'T00:00:00')) === val;
   const upd = { repair_week_start: val || null, repair_week: legacy, updated_at: new Date().toISOString() };
   if (!keepDay) upd.repair_day = null;
@@ -873,7 +1103,6 @@ async function setDay(id, val) {
   if (val === '__remove') { setWeek(id, ''); return; }
   const j = jobs.find(x => x.id === id);
   const upd = { repair_day: val || null, updated_at: new Date().toISOString() };
-  // booking a day also pins the week
   if (val) { upd.repair_week_start = mondayISO(new Date(val + 'T00:00:00')); }
   const { error } = await db.from('jobs').update(upd).eq('id', id);
   if (error) { alert('Error saving day: ' + error.message); return; }
@@ -910,14 +1139,12 @@ function renderJobs() {
     const dClass = days <= 7 ? 'days-ok' : days <= 14 ? 'days-warn' : 'days-over';
     const pips = STAGES.map((_, i) => `<div class="pip ${pipClass(i, j.stage)}"></div>`).join('');
     const pct = Math.round((j.stage / LAST_STAGE) * 100);
+    const addr = jobAddress(j);
     const tags = [];
     if (j.auth_confirmed) tags.push(`<span class="tag tag-auth">✓ Authorised</span>`);
     else tags.push(`<span class="tag tag-no-auth">Awaiting auth</span>`);
     if (j.stage === READY_COLLECT_STAGE) {
-      const plate = (j.reg || '').replace(/\s/g, '').toUpperCase();
-      const hasRec = recJobs.some(r => r.status !== 'cancelled' && r.job_type === 'collection' &&
-        (r.job_id === j.id || (plate && (r.reg || '').replace(/\s/g, '').toUpperCase() === plate)));
-      tags.push(hasRec ? `<span class="tag tag-auth">🚚 Collection booked</span>` : `<span class="tag tag-no-auth">🚚 Collection not booked yet</span>`);
+      tags.push(jobHasRecovery(j, 'collection') ? `<span class="tag tag-auth">🚚 Collection booked</span>` : `<span class="tag tag-no-auth">🚚 Collection not booked yet</span>`);
     }
     if (j.repair_grand_total != null) tags.push(`<span class="tag tag-money">${fmtGBP(j.repair_grand_total)}</span>`);
     if (j.is_estimated) tags.push(`<span class="tag tag-est">✓ Estimated</span>`);
@@ -933,7 +1160,6 @@ function renderJobs() {
     if (j.repair_day) tags.push(`<span class="tag tag-week">🗓 ${fmtWeekISO(j.repair_day)}</span>`);
     else if (j.repair_week_start) tags.push(`<span class="tag tag-week">🗓 Wk ${fmtShortISO(j.repair_week_start)}</span>`);
     const opts = STAGES.map((s, i) => `<option value="${i}" ${j.stage===i?'selected':''}>${s.label}</option>`).join('');
-    const trackerUrl = `${SITE_URL}/track/${(j.reg||'').replace(/\s/g,'')}`;
     return `
     <div class="job-card${j.stage === 0 ? ' stage-new' : j.stage === READY_COLLECT_STAGE ? ' stage-ready' : (j.stage >= ON_SITE_STAGE && j.stage < IN_REPAIR_STAGE) ? ' stage-progress' : j.stage === INVOICED_STAGE ? ' stage-invoiced' : ''}">
       <div class="job-header clickable" onclick="openDetail('${j.id}')" title="Open job details">
@@ -941,8 +1167,8 @@ function renderJobs() {
         <div class="job-info">
           <div class="job-name">${escHtml(j.name) || '—'} ${tags.join('')}</div>
           <div class="job-vehicle">${escHtml(j.vehicle) || '—'}</div>
-          <div class="job-addr">${j.mobile ? '📱 ' + escHtml(j.mobile) : 'No mobile'}</div>
-          <div class="job-addr">${escHtml(j.address) || ''}</div>
+          ${addr ? `<div class="job-addr">📍 ${escHtml(addr)}</div>` : ''}
+          ${j.mobile ? `<div class="job-addr">📱 ${escHtml(j.mobile)}</div>` : ''}
         </div>
         <span class="days-pill ${dClass}">${days}d</span>
       </div>
@@ -960,8 +1186,6 @@ function renderJobs() {
         <select class="stage-select" onchange="updateStage('${j.id}', this.value)">${opts}</select>
         ${weekSelectHTML(j)}
         <button class="btn-link" onclick="bookRecoveryFor('${j.id}')" title="Book a recovery for this job">🚚</button>
-        <a href="${trackerUrl}" target="_blank" class="btn-link" title="Customer tracker link">🔗</a>
-        <button class="btn-icon" onclick="copyLink('${trackerUrl}')" title="Copy tracker link">📋</button>
         <button class="btn-icon" onclick="removeJob('${j.id}', '${(j.name||'').replace(/'/g,"\\'")}', '${j.reg||''}')" title="Remove job" style="color:var(--red)">✕</button>
       </div>
       <textarea class="notes-area" placeholder="Quick note…" onblur="saveNotes('${j.id}', this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.blur()}">${escHtml(j.notes) || ''}</textarea>
@@ -999,6 +1223,7 @@ async function updateStage(id, stage) {
     j.stage = stage;
     j.stage_dates = sd;
     logEvent(j, 'stage', 'Moved to "' + (STAGES[stage] ? STAGES[stage].label : stage) + '"', false);
+    await syncRepairDates(j, autoRepairDates(j));
   }
   renderJobs();
   if (document.getElementById('week-view').style.display === 'block') renderWeek();
@@ -1011,7 +1236,7 @@ async function updateStageFromDetail(id, stage) {
 async function removeJob(id, name, reg) {
   if (!confirm(`Remove ${name} (${reg}) from dashboard?\n\nThis should only be done when remittance has been received from ACG.`)) return;
   const j = jobs.find(x => x.id === id);
-  if (j) await logEvent(j, 'removed', 'Removed from dashboard', false);   // event survives (job_id set null)
+  if (j) await logEvent(j, 'removed', 'Removed from dashboard', false);
   const { error } = await db.from('jobs').delete().eq('id', id);
   if (error) { alert('Error removing job: ' + error.message); return; }
   jobs = jobs.filter(x => x.id !== id);
@@ -1023,21 +1248,34 @@ async function addJob() {
   const name = document.getElementById('f-name').value.trim();
   const reg = document.getElementById('f-reg').value.trim().toUpperCase();
   const vehicle = document.getElementById('f-vehicle').value.trim();
-  const address = document.getElementById('f-addr').value.trim();
+  const mobile = document.getElementById('f-mobile').value.trim();
+  const address = cleanAddress(document.getElementById('f-addr').value.trim(), name);
   const invoice_number = document.getElementById('f-inv').value.trim();
   const acg_ref = document.getElementById('f-ref').value.trim();
   const stage = parseInt(document.getElementById('f-stage').value);
   if (!name || !reg || !vehicle) { alert('Please fill in name, registration and vehicle.'); return; }
   const stage_dates = {}; stage_dates[stage] = todayISO();
-  const { data, error } = await db.from('jobs').insert([{
+  const row = {
     name, reg, vehicle, address, invoice_number, acg_ref, stage,
     auth_confirmed: stage >= IN_REPAIR_STAGE, added_date: todayISO(), stage_dates
-  }]).select();
+  };
+  if (newColsOk) {
+    row.mobile = mobile || null;
+    row.repair_dates = { instructed: { d: todayISO(), m: false } };
+  }
+  let { data, error } = await db.from('jobs').insert([row]).select();
+  if (error && mobile && /mobile|repair_dates|column/i.test(error.message)) {
+    // database not migrated yet — save the job anyway, minus the new fields
+    newColsOk = false;
+    delete row.mobile; delete row.repair_dates;
+    ({ data, error } = await db.from('jobs').insert([row]).select());
+    if (!error) alert('Job added, but the phone number could not be saved — run supabase-migration-v2.sql in Supabase, then add it from the job popup.');
+  }
   if (error) { alert('Error adding job: ' + error.message); return; }
   const newJob = (data && data[0]) || { id: null, reg, name };
   logEvent(newJob, 'created', 'Job added manually — starting at "' + (STAGES[stage] ? STAGES[stage].label : stage) + '"', false);
   closeModal('add-modal');
-  ['f-name','f-reg','f-vehicle','f-addr','f-inv','f-ref'].forEach(id => document.getElementById(id).value = '');
+  ['f-name','f-reg','f-vehicle','f-mobile','f-addr','f-inv','f-ref'].forEach(id => document.getElementById(id).value = '');
   await refreshJobs();
 }
 function toggleDamage(id) {
@@ -1062,13 +1300,6 @@ async function saveNotes(id, el) {
     if (saved) { saved.style.display = 'block'; setTimeout(() => saved.style.display = 'none', 2000); }
   }
 }
-function copyLink(url) {
-  navigator.clipboard.writeText(url).then(() => {
-    const btn = event.target;
-    btn.textContent = '✓';
-    setTimeout(() => btn.textContent = '📋', 1500);
-  });
-}
 function setFilter(f, btn) {
   currentFilter = f;
   document.querySelectorAll('#admin-view .tab-btn').forEach(t => t.classList.remove('active'));
@@ -1087,7 +1318,7 @@ function closeModal(id) { document.getElementById(id).classList.remove('open'); 
 document.querySelectorAll('.modal-overlay').forEach(m => {
   m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
 });
-// ─── CHECKLIST FLAGS (lives in the job popup now) ─────────
+// ─── CHECKLIST FLAGS (lives in the job popup) ─────────────
 async function setFlag(id, field, value) {
   const upd = { updated_at: new Date().toISOString() };
   upd[field] = value;
@@ -1097,6 +1328,13 @@ async function setFlag(id, field, value) {
   if (j) {
     j[field] = value;
     if (FLAG_LABELS[field]) logEvent(j, 'check', FLAG_LABELS[field] + (value ? ' ✓' : ' — un-ticked'), false);
+    const keys = FLAG_DATE_KEYS[field];
+    if (keys) {
+      for (const k of keys) {
+        if (value) await stampRepairDate(j, k, todayISO());
+        else await unstampRepairDate(j, k);
+      }
+    }
   }
   renderJobs();
   if (document.getElementById('week-view').style.display === 'block') renderWeek();
@@ -1110,6 +1348,31 @@ async function setText(id, field, value) {
   if (error) { alert('Error saving: ' + error.message); return; }
   const j = jobs.find(x => x.id === id);
   if (j) j[field] = value;
+}
+// customer phone number, edited from the job popup
+async function setMobile(id, value) {
+  const v = (value || '').trim() || null;
+  const { error } = await db.from('jobs').update({ mobile: v, updated_at: new Date().toISOString() }).eq('id', id);
+  if (error) {
+    newColsOk = false;
+    alert('Error saving phone number: ' + error.message + '\n\nIf it says the column doesn\'t exist, run supabase-migration-v2.sql in the Supabase SQL Editor.');
+    return;
+  }
+  const j = jobs.find(x => x.id === id);
+  if (j) { j.mobile = v; logEvent(j, 'contact', v ? 'Phone number set to ' + v : 'Phone number cleared', false); }
+  renderJobs();
+  renderDetail();
+  renderRecovery();
+}
+// tidy the stored address (strip the duplicated bits) and save it back
+async function setAddress(id, value) {
+  const j = jobs.find(x => x.id === id);
+  const v = cleanAddress(value, j && j.name) || null;
+  const { error } = await db.from('jobs').update({ address: v, updated_at: new Date().toISOString() }).eq('id', id);
+  if (error) { alert('Error saving address: ' + error.message); return; }
+  if (j) { j.address = v; logEvent(j, 'contact', 'Address updated', false); }
+  renderJobs();
+  renderDetail();
 }
 async function setGrandTotal(id, val) {
   const num = val === '' ? null : parseFloat(val);
@@ -1155,6 +1418,9 @@ async function loadDetailData(id) {
     const ph = await db.storage.from(PHOTO_BUCKET).list(id, { limit: 100, sortBy: { column: 'created_at', order: 'desc' } });
     detailPhotos = (ph.data || []).filter(f => f.name !== '.emptyFolderPlaceholder');
   } catch (err) { detailPhotos = []; }
+  // now the parts + history are in, backfill any repair dates we can work out
+  const j = jobs.find(x => x.id === id);
+  if (j) await syncRepairDates(j, autoRepairDatesDetail(j));
   if (detailJobId === id) renderDetail();
 }
 function setDetailTab(t) { detailTab = t; renderDetail(); }
@@ -1163,10 +1429,10 @@ function renderDetail() {
   const el = document.getElementById('detail-content');
   if (!j) { el.innerHTML = ''; return; }
   const sd = j.stage_dates || {};
+  const addr = jobAddress(j);
   const pips = STAGES.map((_, i) => `<div class="detail-pip ${pipClass(i, j.stage)}"></div>`).join('');
   const pct = Math.round((j.stage / LAST_STAGE) * 100);
   const opts = STAGES.map((s, i) => `<option value="${i}" ${j.stage===i?'selected':''}>${s.label}</option>`).join('');
-  const trackerUrl = `${SITE_URL}/track/${(j.reg||'').replace(/\s/g,'')}`;
   const chips = [];
   chips.push(`<span class="chip">Added <strong>${fmtShortISO(j.added_date)}</strong></span>`);
   chips.push(`<span class="chip"><strong>${daysSince(j.added_date)}d</strong> on the books</span>`);
@@ -1181,19 +1447,21 @@ function renderDetail() {
   const tabBtn = (key, label) => `<button class="dtab ${detailTab===key?'active':''}" onclick="setDetailTab('${key}')">${label}</button>`;
   let body = '';
   if (detailTab === 'timeline') body = buildTimeline(j, sd);
+  else if (detailTab === 'dates') body = buildRepairDates(j);
   else if (detailTab === 'checklist') body = buildChecklist(j);
   else if (detailTab === 'costs') body = buildCosts(j);
   else if (detailTab === 'notes') body = buildNotes(j);
   else if (detailTab === 'parts') body = buildParts(j);
   else if (detailTab === 'photos') body = buildPhotos(j);
   else if (detailTab === 'damage') body = buildDamage(j);
+  else if (detailTab === 'contact') body = buildContact(j);
   el.innerHTML = `
     <div class="detail-header">
       <div class="detail-reg">${j.reg || '—'}</div>
       <div class="detail-info">
         <div class="detail-name">${escHtml(j.name) || '—'}</div>
         <div class="detail-vehicle">${escHtml(j.vehicle) || '—'}</div>
-        <div class="detail-addr">${escHtml(j.address) || ''}</div>
+        ${addr ? `<div class="detail-addr">📍 ${escHtml(addr)}</div>` : ''}
       </div>
     </div>
     <div class="detail-stage-label">${STAGES[j.stage]?.label || '—'}</div>
@@ -1202,28 +1470,29 @@ function renderDetail() {
     <div class="kv-chips">${chips.join('')}</div>
     <div class="detail-refs">
       ${j.invoice_number ? 'INV ' + escHtml(j.invoice_number) + '  ·  ' : ''}ACG ${escHtml(j.acg_ref) || '—'}${j.laird_ref ? '  ·  LAIRD ' + escHtml(j.laird_ref) : ''}
-      ${j.mobile ? '<br>📱 ' + escHtml(j.mobile) : ''}
+      ${j.mobile ? '<br>📱 <a href="' + escAttr(telLink(j.mobile)) + '">' + escHtml(j.mobile) + '</a>' : '<br><span style="color:var(--faint)">No phone number — add one on the 📇 Contact tab</span>'}
     </div>
     <div class="dtabs">
       ${tabBtn('timeline', '📋 Timeline')}
+      ${tabBtn('dates', '📆 Repair dates')}
       ${tabBtn('checklist', '✅ Checklist')}
       ${tabBtn('costs', '💷 Costs')}
       ${tabBtn('notes', '📝 Notes' + (detailNotes.length ? ' (' + detailNotes.length + ')' : ''))}
       ${tabBtn('parts', '🔩 Parts' + (detailParts.length ? ' (' + detailParts.length + ')' : ''))}
       ${tabBtn('photos', '📷 Photos' + (detailPhotos.length ? ' (' + detailPhotos.length + ')' : ''))}
       ${tabBtn('damage', '🔧 Damage')}
+      ${tabBtn('contact', '📇 Contact')}
     </div>
     <div id="detail-tab-body">${body}</div>
     <div class="detail-actions">
       <select class="detail-select" onchange="updateStageFromDetail('${j.id}', this.value)">${opts}</select>
       ${weekSelectHTML(j)}
       <button class="detail-close" onclick="document.getElementById('detail-modal').classList.remove('open');bookRecoveryFor('${j.id}')">🚚 Recovery</button>
-      <button class="detail-close" onclick="copyLink('${trackerUrl}')">📋 Tracker</button>
       <button class="detail-del" onclick="removeJob('${j.id}', '${(j.name||'').replace(/'/g,"\\'")}', '${j.reg||''}')">Remove</button>
     </div>`;
 }
-function migrationHint() {
-  return '<div class="hint-box">This feature needs the database upgrade — run <strong>supabase-migration.sql</strong> once in Supabase → SQL Editor.</div>';
+function migrationHint(file) {
+  return '<div class="hint-box">This feature needs the database upgrade — run <strong>' + (file || 'supabase-migration.sql') + '</strong> once in Supabase → SQL Editor, then hit ↻ Refresh.</div>';
 }
 // — Timeline tab: every stage with the date it was reached + full event history —
 function buildTimeline(j, sd) {
@@ -1253,7 +1522,62 @@ function buildTimeline(j, sd) {
     <div class="section-label">Full history</div>
     <div class="log-box">${history}</div>`;
 }
-// — Checklist tab: estimate / parts / supplementary (moved here from the schedule page) —
+// — Repair dates tab: the eleven key dates, auto-filled but always overridable —
+function buildRepairDates(j) {
+  if (!newColsOk) return migrationHint('supabase-migration-v2.sql');
+  const auto = autoRepairDatesDetail(j);
+  const rows = REPAIR_DATE_FIELDS.map(f => {
+    const val = rdValue(j, f.key);
+    const manual = rdManual(j, f.key);
+    const autoVal = auto[f.key] || '';
+    const badge = manual ? '<span class="rd-badge rd-manual">Manual</span>'
+                : val ? '<span class="rd-badge rd-auto">Auto</span>'
+                : '<span class="rd-badge rd-none">Not set</span>';
+    const revert = manual && autoVal && autoVal !== val
+      ? `<button class="rd-revert" onclick="revertRepairDate('${j.id}','${f.key}')" title="Back to the automatic date (${fmtShortISO(autoVal)})">↺</button>`
+      : '<span class="rd-spacer"></span>';
+    return `<div class="rd-row">
+      <div class="rd-label" title="${escAttr(f.auto)}">${f.label}${badge}</div>
+      <input type="date" class="rd-input${manual ? ' is-manual' : ''}" value="${val}"
+        onchange="setRepairDate('${j.id}','${f.key}',this.value)">
+      ${revert}
+    </div>`;
+  }).join('');
+  const manualCount = REPAIR_DATE_FIELDS.filter(f => rdManual(j, f.key)).length;
+  return `
+    <div class="notready-banner" style="margin-bottom:10px">
+      Dates marked <span class="rd-badge rd-auto">Auto</span> fill themselves in as the job moves through the workshop.
+      Type over any of them to set your own — it turns <span class="rd-badge rd-manual">Manual</span> and the automation
+      leaves it alone from then on. Press <strong>↺</strong> to hand it back to the automation.
+      ${manualCount ? `<br><strong>${manualCount}</strong> date${manualCount === 1 ? ' is' : 's are'} currently overridden by hand.` : ''}
+    </div>
+    ${rows}`;
+}
+// — Contact tab: phone + a single, tidied address —
+function buildContact(j) {
+  const addr = jobAddress(j);
+  const raw = (j.address || '').trim();
+  const wasTidied = raw && addr && normKey(raw) !== normKey(addr);
+  return `
+    <div class="section-label">Customer phone</div>
+    <div class="chk" style="cursor:default">
+      <span>📱</span>
+      <input type="tel" value="${escAttr(j.mobile || '')}" placeholder="07123 456789"
+        onchange="setMobile('${j.id}', this.value)"
+        style="flex:1;font-size:13px;font-family:inherit;padding:5px 8px;border:1px solid var(--border-strong);border-radius:6px;background:var(--card)">
+      ${j.mobile ? `<a class="btn-link" href="${escAttr(telLink(j.mobile))}" title="Call">📞</a>` : ''}
+    </div>
+    <div class="section-label">Address</div>
+    <div class="chk" style="cursor:default">
+      <span>📍</span>
+      <input type="text" value="${escAttr(addr)}" placeholder="1 High Street, Liverpool, L1 1AA"
+        onchange="setAddress('${j.id}', this.value)"
+        style="flex:1;font-size:13px;font-family:inherit;padding:5px 8px;border:1px solid var(--border-strong);border-radius:6px;background:var(--card)">
+      ${addr ? `<a class="btn-link" href="${escAttr(mapsLink(addr))}" target="_blank" rel="noopener" title="Open in Google Maps">🗺</a>` : ''}
+    </div>
+    ${wasTidied ? `<div class="hint-box" style="margin-top:10px">This address had repeated bits in it, so the dashboard is showing it tidied up. Press Enter in the box above to save the clean version over the original.<br><span style="font-family:'DM Mono',monospace;font-size:11px">Stored: ${escHtml(raw)}</span></div>` : ''}`;
+}
+// — Checklist tab: estimate / parts / supplementary —
 function buildChecklist(j) {
   const ready = readyToStart(j);
   const banner = ready
@@ -1276,9 +1600,10 @@ function buildChecklist(j) {
     <div class="check-grid">
       <label class="chk ${j.needs_supplementary?'on':''}"><input type="checkbox" ${j.needs_supplementary?'checked':''} onchange="setFlag('${j.id}','needs_supplementary',this.checked)"> Needs a supplementary</label>
       ${j.needs_supplementary ? `<label class="chk sub-chk ${j.supplementary_sent?'on':''}"><input type="checkbox" ${j.supplementary_sent?'checked':''} onchange="setFlag('${j.id}','supplementary_sent',this.checked)"> Supplementary sent</label>` : ''}
-    </div>`;
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:10px">Ticking these also stamps the matching date on the 📆 Repair dates tab.</div>`;
 }
-// — Costs tab: full invoice breakdown (auto-filled by the email workflow) —
+// — Costs tab: full invoice breakdown + what the recoveries cost —
 function buildCosts(j) {
   const rows = [
     ['Labour', j.labour_cost], ['Parts', j.parts_cost],
@@ -1291,8 +1616,17 @@ function buildCosts(j) {
       rows.map(r => `<div style="display:flex;justify-content:space-between;padding:3px 0;${/total/i.test(r[0]) ? 'font-weight:600;border-top:1px solid var(--border);margin-top:2px;padding-top:6px;' : ''}"><span>${r[0]}</span><span>${fmtGBP(r[1])}</span></div>`).join('') +
       `</div>`
     : '<div style="font-size:12px;color:var(--muted);padding:8px 2px">No invoice figures yet — they fill in automatically when the authority email is processed. You can enter a grand total manually below.</div>';
+  const recs = recoveriesForJob(j);
+  const recCost = recs.reduce((s, r) => s + (Number(r.cost) || 0), 0);
+  const recBlock = recs.length ? `
+    <div class="section-label">Recovery costs</div>
+    <div class="detail-refs" style="font-size:12px">
+      ${recs.map(r => `<div style="display:flex;justify-content:space-between;padding:3px 0"><span>${recTypeLabel(r.job_type)} · ${fmtShortISO(r.scheduled_date)}</span><span>${r.cost != null ? fmtGBP(r.cost) : '—'}</span></div>`).join('')}
+      <div style="display:flex;justify-content:space-between;font-weight:600;border-top:1px solid var(--border);margin-top:2px;padding-top:6px"><span>Recovery total</span><span>${fmtGBP(recCost)}</span></div>
+    </div>` : '';
   return `
     ${breakdown}
+    ${recBlock}
     <div class="section-label">Grand total (manual override)</div>
     <div class="chk" style="cursor:default;max-width:280px">
       <span style="white-space:nowrap">£</span>
@@ -1301,7 +1635,7 @@ function buildCosts(j) {
         style="flex:1;min-width:80px;font-size:13px;font-family:inherit;padding:4px 8px;border:1px solid var(--border-strong);border-radius:6px;background:var(--card)">
     </div>`;
 }
-// — Notes tab: timestamped notes —
+// — Notes tab: timestamped notes (the same notes the recovery popup shows) —
 function buildNotes(j) {
   if (!historyOk) return migrationHint();
   const list = detailNotes.length ? detailNotes.map(n => `
@@ -1336,9 +1670,10 @@ async function deleteNote(id) {
   const { error } = await db.from('job_notes').delete().eq('id', id);
   if (error) { alert('Error deleting note: ' + error.message); return; }
   detailNotes = detailNotes.filter(n => n.id !== id);
+  if (recDetailId) recJobNotes = recJobNotes.filter(n => n.id !== id);
   renderDetail();
 }
-// — Parts tab: parts & costs with dates —
+// — Parts tab —
 function buildParts(j) {
   if (!historyOk) return migrationHint();
   const rows = detailParts.length ? detailParts.map(p => `
@@ -1361,7 +1696,8 @@ function buildParts(j) {
       <button class="btn btn-primary" onclick="addPart()">Add</button>
     </div>
     ${rows}
-    ${detailParts.length ? `<div class="parts-total">Parts total: £${total.toFixed(2)}</div>` : ''}`;
+    ${detailParts.length ? `<div class="parts-total">Parts total: £${total.toFixed(2)}</div>` : ''}
+    <div style="font-size:11px;color:var(--muted);margin-top:8px">Marking a part <strong>Arrived</strong> feeds the "parts came on site" dates on the 📆 tab.</div>`;
 }
 async function addPart() {
   const desc = (document.getElementById('new-part-desc').value || '').trim();
@@ -1383,7 +1719,10 @@ async function setPartStatus(id, status) {
   if (error) { alert('Error updating part: ' + error.message); return; }
   if (p) { p.status = status; if (upd.arrived_date) p.arrived_date = upd.arrived_date; }
   const j = jobs.find(x => x.id === detailJobId);
-  if (j && p) logEvent(j, 'part', 'Part ' + status + ': ' + p.description, false);
+  if (j && p) {
+    logEvent(j, 'part', 'Part ' + status + ': ' + p.description, false);
+    await syncRepairDates(j, autoRepairDatesDetail(j));
+  }
   renderDetail();
 }
 async function deletePart(id) {
@@ -1497,6 +1836,7 @@ function garyCard(j) {
   const days = daysSince(j.added_date);
   const dClass = days <= 7 ? 'days-ok' : days <= 14 ? 'days-warn' : 'days-over';
   const pips = STAGES.map((_, i) => `<div class="pip ${pipClass(i, j.stage)}"></div>`).join('');
+  const addr = jobAddress(j);
   const tags = [];
   tags.push(j.is_estimated ? '<span class="tag tag-est">✓ Estimated</span>' : '<span class="tag tag-no-auth">Not estimated</span>');
   tags.push(j.auth_confirmed ? '<span class="tag tag-auth">✓ Authorised</span>' : '<span class="tag tag-no-auth">Awaiting auth</span>');
@@ -1509,7 +1849,8 @@ function garyCard(j) {
       <div class="job-info">
         <div class="job-name">${escHtml(j.name) || '—'} ${tags.join('')}</div>
         <div class="job-vehicle">${escHtml(j.vehicle) || '—'}</div>
-        <div class="job-addr">${j.mobile ? '📱 ' + escHtml(j.mobile) : ''} ${j.address ? '· ' + escHtml(j.address) : ''}</div>
+        ${addr ? `<div class="job-addr">📍 ${escHtml(addr)}</div>` : ''}
+        ${j.mobile ? `<div class="job-addr">📱 ${escHtml(j.mobile)}</div>` : ''}
       </div>
       <span class="days-pill ${dClass}">${days}d</span>
     </div>
@@ -1595,14 +1936,13 @@ function calTile(j) {
   </div>`;
 }
 function renderWeek() {
-  const t = mondayISO(new Date()), n = addWeeksISO(t, 1);
+  const thisWk = mondayISO(new Date()), nextWk = addWeeksISO(thisWk, 1);
   const label = document.getElementById('week-label');
-  const badge = schedWeek === t ? '<span class="wk-badge">This week</span>'
-              : schedWeek === n ? '<span class="wk-badge">Next week</span>'
-              : schedWeek < t ? '<span class="wk-badge" style="background:var(--red-light);color:var(--red)">Past</span>' : '';
+  const badge = schedWeek === thisWk ? '<span class="wk-badge">This week</span>'
+              : schedWeek === nextWk ? '<span class="wk-badge">Next week</span>'
+              : schedWeek < thisWk ? '<span class="wk-badge" style="background:var(--red-light);color:var(--red)">Past</span>' : '';
   if (label) label.innerHTML = 'Week commencing ' + fmtWeekISO(schedWeek) + badge;
   const weekJobs = jobs.filter(j => j.repair_week_start === schedWeek);
-  // job picker: active jobs not already in this week
   const pick = document.getElementById('week-add-select');
   if (pick) {
     const candidates = jobs.filter(j => j.stage < INVOICED_STAGE && j.repair_week_start !== schedWeek);
@@ -1619,21 +1959,21 @@ function renderWeek() {
   let totalsBar = '';
   if (weekJobs.length) {
     const sum = f => weekJobs.reduce((s, j) => s + (Number(j[f]) || 0), 0);
-    const t = {
+    const tot = {
       labour: sum('labour_cost'), parts: sum('parts_cost'), paint: sum('paint_cost'),
       specialist: sum('specialist_cost'), sub: sum('sub_total'), vat: sum('vat_total'),
       grand: sum('repair_grand_total')
     };
-    if (t.grand > 0 || t.sub > 0) {
+    if (tot.grand > 0 || tot.sub > 0) {
       const item = (lbl, val, cls) => `<div class="wt-item${cls ? ' ' + cls : ''}"><div class="wt-val">${fmtGBP(val)}</div><div class="wt-lbl">${lbl}</div></div>`;
       totalsBar = `<div class="week-totals">
-        ${item('Labour', t.labour)}
-        ${item('Parts', t.parts)}
-        ${item('Paint & materials', t.paint)}
-        ${item('Specialist', t.specialist)}
-        ${item('Sub total', t.sub)}
-        ${item('VAT', t.vat)}
-        ${item('Week grand total', t.grand, 'wt-grand')}
+        ${item('Labour', tot.labour)}
+        ${item('Parts', tot.parts)}
+        ${item('Paint & materials', tot.paint)}
+        ${item('Specialist', tot.specialist)}
+        ${item('Sub total', tot.sub)}
+        ${item('VAT', tot.vat)}
+        ${item('Week grand total', tot.grand, 'wt-grand')}
       </div>`;
     }
   }
@@ -1664,6 +2004,8 @@ function renderWeek() {
   el.innerHTML = html;
 }
 // ─── CUSTOMER TRACKER ─────────────────────────────────────
+// Still served at /track/<REG> for customers who already have the link —
+// the dashboard no longer shows or copies those links.
 async function showTracker(reg) {
   document.getElementById('loading-view').style.display = 'none';
   document.getElementById('tracker-view').style.display = 'block';
@@ -1672,9 +2014,9 @@ async function showTracker(reg) {
   const el = document.getElementById('tracker-content');
   if (error || !data || data.length === 0) {
     el.innerHTML = `
-      <div class="tracker-not-found">
+      <div class="tracker-not-found" style="text-align:center;padding:3rem 1rem">
         <div style="font-size:40px;margin-bottom:12px">🔍</div>
-        <h2>Job not found</h2>
+        <h2 style="font-size:18px;margin-bottom:8px">Job not found</h2>
         <p style="color:var(--muted);font-size:13px">We couldn't find a job for registration <strong>${escHtml(reg)}</strong>.<br>Please call us on <strong>0151 207 9817</strong> if you need help.</p>
       </div>`;
     return;
@@ -1725,10 +2067,10 @@ async function showTracker(reg) {
 // ═══════════════════════════════════════════════════════════
 // VEHICLE RECOVERY
 // ═══════════════════════════════════════════════════════════
-let recDrivers = [], recJobs = [], recOk = true;
+let recDrivers = [], recJobs = [], recOk = true, recExtraOk = true;
 let recTab = 'cal';
 let recWeek = mondayISO(new Date());
-let recDetailId = null, recNotes = [];
+let recDetailId = null, recNotes = [], recJobNotes = [];
 let recEditId = null;
 let recMap = null, recMapLayers = [], recMapToken = 0, recMapFitKey = '';
 const routeCache = {};
@@ -1777,13 +2119,52 @@ async function loadRecovery(silent) {
     return;
   }
   recOk = true;
-  recDrivers = d.data || [];
   recJobs = r.data || [];
+  recDrivers = d.data || [];
+  // cost + phone live in their own columns — check they exist once
+  recExtraOk = !recJobs.length || recJobs.some(x => 'cost' in x || 'phone' in x);
   // quietly geocode any jobs that are missing coordinates
   recJobs.filter(j => needsGeocode(j)).slice(0, 4).forEach(j => geocodeRecJob(j));
   renderRecovery();
   // refresh the 🚚 booking tags on the main dashboard now recovery data is in
   if (document.getElementById('admin-view').style.display === 'block' && !uiBusy()) renderJobs();
+}
+// — helpers —
+function driverById(id) { return recDrivers.find(d => d.id === id) || null; }
+function driverColor(d) {
+  if (!d) return '#888888';
+  if (d.color) return d.color;
+  const i = recDrivers.indexOf(d);
+  return DRIVER_PALETTE[(i < 0 ? 0 : i) % DRIVER_PALETTE.length];
+}
+function fmtRecTime(t) { return t ? String(t).slice(0, 5) : ''; }
+function recTypeLabel(t) { return t === 'delivery' ? 'Delivery' : 'Collection'; }
+function shortAddr(a) {
+  if (!a) return '—';
+  const first = String(cleanAddress(a)).split(',')[0].trim();
+  return first.length > 26 ? first.slice(0, 26) + '…' : first;
+}
+function needsGeocode(j) {
+  return (j.pickup_address && (j.pickup_lat == null || j.pickup_lng == null)) ||
+         (j.dropoff_address && (j.dropoff_lat == null || j.dropoff_lng == null));
+}
+function recStatusLabel(s) { const m = REC_STATUSES.find(x => x[0] === s); return m ? m[1] : s; }
+// The repair job a recovery belongs to — by link if there is one, otherwise by reg.
+function linkedJobFor(r) {
+  if (!r) return null;
+  if (r.job_id) {
+    const byId = jobs.find(j => j.id === r.job_id);
+    if (byId) return byId;
+  }
+  const plate = (r.reg || '').replace(/\s/g, '').toUpperCase();
+  if (!plate) return null;
+  return jobs.find(j => (j.reg || '').replace(/\s/g, '').toUpperCase() === plate) || null;
+}
+function recoveriesForJob(j) {
+  if (!j) return [];
+  const plate = (j.reg || '').replace(/\s/g, '').toUpperCase();
+  return recJobs.filter(r => r.status !== 'cancelled' &&
+    (r.job_id === j.id || (plate && (r.reg || '').replace(/\s/g, '').toUpperCase() === plate)));
 }
 // does this repair job already have a live recovery of the given type?
 function jobHasRecovery(j, type) {
@@ -1791,12 +2172,19 @@ function jobHasRecovery(j, type) {
   return recJobs.some(r => r.status !== 'cancelled' && r.job_type === type &&
     (r.job_id === j.id || (plate && (r.reg || '').replace(/\s/g, '').toUpperCase() === plate)));
 }
+// make & model / phone for a recovery, falling back to the repair job
+function recVehicle(r) { const j = linkedJobFor(r); return r.vehicle || (j && j.vehicle) || ''; }
+function recPhone(r)   { const j = linkedJobFor(r); return r.phone || (j && j.mobile) || ''; }
+function recCustomer(r){ const j = linkedJobFor(r); return r.customer_name || (j && j.name) || ''; }
+// — WAITING QUEUES —
 function recQueueItem(j, type) {
+  const addr = jobAddress(j);
   return `<div class="rec-queue-item" onclick="queueBook('${j.id}', '${type}')" title="Book this ${type} into the diary">
     <span class="cal-reg">${escHtml(j.reg) || '—'}</span>
     <div class="rec-queue-info">
-      <div class="rec-queue-name">${escHtml(j.name) || '—'}</div>
-      <div class="rec-queue-addr">${escHtml(j.address) || 'No address on the job'}</div>
+      <div class="rec-queue-veh">${escHtml(j.vehicle) || 'Vehicle not recorded'}</div>
+      <div class="rec-queue-name">${escHtml(j.name) || '—'}${j.mobile ? ' · <span style="font-weight:400">📱 ' + escHtml(j.mobile) + '</span>' : ''}</div>
+      <div class="rec-queue-addr">${escHtml(addr) || 'No address on the job'}</div>
     </div>
     <span class="rec-queue-go">+ Book →</span>
   </div>`;
@@ -1846,31 +2234,12 @@ function setRecTab(t) {
     setTimeout(() => { if (recMap) recMap.invalidateSize(); renderRecMap(); }, 60);
   }
 }
-// — helpers —
-function driverById(id) { return recDrivers.find(d => d.id === id) || null; }
-function driverColor(d) {
-  if (!d) return '#888888';
-  if (d.color) return d.color;
-  const i = recDrivers.indexOf(d);
-  return DRIVER_PALETTE[(i < 0 ? 0 : i) % DRIVER_PALETTE.length];
-}
-function fmtRecTime(t) { return t ? String(t).slice(0, 5) : ''; }
-function recTypeLabel(t) { return t === 'delivery' ? 'Delivery' : 'Collection'; }
-function shortAddr(a) {
-  if (!a) return '—';
-  const first = String(a).split(',')[0].trim();
-  return first.length > 26 ? first.slice(0, 26) + '…' : first;
-}
-function needsGeocode(j) {
-  return (j.pickup_address && (j.pickup_lat == null || j.pickup_lng == null)) ||
-         (j.dropoff_address && (j.dropoff_lat == null || j.dropoff_lng == null));
-}
-function recStatusLabel(s) { const m = REC_STATUSES.find(x => x[0] === s); return m ? m[1] : s; }
 // — CALENDAR —
 function navRecWeek(n) { recWeek = addWeeksISO(recWeek, n); renderRecCal(); }
 function goRecThisWeek() { recWeek = mondayISO(new Date()); renderRecCal(); }
 function recTile(r) {
   const d = driverById(r.driver_id);
+  const veh = recVehicle(r), phone = recPhone(r);
   const cls = (r.job_type === 'delivery' ? 'r-del' : 'r-coll') +
     (r.status === 'done' ? ' r-done' : r.status === 'cancelled' ? ' r-cancelled' : '');
   return `<div class="rec-tile ${cls}" onclick="openRecDetail('${r.id}')" title="Open recovery details">
@@ -1879,33 +2248,53 @@ function recTile(r) {
       <span class="rec-type ${r.job_type === 'delivery' ? 'del' : 'coll'}">${recTypeLabel(r.job_type)}</span>
     </div>
     ${r.reg ? `<span class="cal-reg" style="margin-top:4px">${escHtml(r.reg)}</span>` : ''}
-    ${r.customer_name ? `<div class="cal-name">${escHtml(r.customer_name)}</div>` : ''}
+    <div class="rec-vehicle">${escHtml(veh) || '<span style="color:var(--faint)">Vehicle not recorded</span>'}</div>
+    ${recCustomer(r) ? `<div class="cal-name">${escHtml(recCustomer(r))}</div>` : ''}
+    ${phone ? `<div class="rec-phone">📱 ${escHtml(phone)}</div>` : ''}
     <div class="rec-route"><strong>${escHtml(shortAddr(r.pickup_address))}</strong> → <strong>${escHtml(shortAddr(r.dropoff_address))}</strong></div>
+    ${r.cost != null ? `<span class="rec-cost">${fmtGBP(r.cost)}</span>` : ''}
     ${d ? `<div class="rec-driver-row"><span class="driver-dot" style="background:${driverColor(d)}"></span>${escHtml(d.name)}</div>`
         : `<div class="rec-nodriver">⚠ No driver allocated</div>`}
     ${(function(){ const p = r.follows_id ? recJobs.find(x => x.id === r.follows_id) : null;
        return p ? `<div class="rec-note-flag">↳ straight after ${escHtml(p.reg || shortAddr(p.pickup_address))}</div>` : ''; })()}
-    ${r.notes ? `<div class="rec-note-flag">📝 ${escHtml(r.notes.length > 34 ? r.notes.slice(0, 34) + '…' : r.notes)}</div>` : ''}
+    ${r.notes ? `<div class="rec-note-flag">🧰 ${escHtml(r.notes.length > 34 ? r.notes.slice(0, 34) + '…' : r.notes)}</div>` : ''}
   </div>`;
 }
 function renderRecCal() {
   const el = document.getElementById('rec-cal-body');
   if (!el) return;
   if (!recOk) { el.innerHTML = recMigrationHint(); return; }
-  const t = mondayISO(new Date()), n = addWeeksISO(t, 1);
-  const badge = recWeek === t ? '<span class="wk-badge">This week</span>'
-              : recWeek === n ? '<span class="wk-badge">Next week</span>'
-              : recWeek < t ? '<span class="wk-badge" style="background:var(--red-light);color:var(--red)">Past</span>' : '';
+  const thisWk = mondayISO(new Date()), nextWk = addWeeksISO(thisWk, 1);
+  const badge = recWeek === thisWk ? '<span class="wk-badge">This week</span>'
+              : recWeek === nextWk ? '<span class="wk-badge">Next week</span>'
+              : recWeek < thisWk ? '<span class="wk-badge" style="background:var(--red-light);color:var(--red)">Past</span>' : '';
   const label = document.getElementById('rec-week-label');
   if (label) label.innerHTML = 'Week commencing ' + fmtWeekISO(recWeek) + badge;
   const weekEnd = addDaysISO(recWeek, 7);
   const weekJobs = recJobs.filter(r => r.scheduled_date >= recWeek && r.scheduled_date < weekEnd);
-  const colls = weekJobs.filter(r => r.job_type !== 'delivery' && r.status !== 'cancelled').length;
-  const dels = weekJobs.filter(r => r.job_type === 'delivery' && r.status !== 'cancelled').length;
+  const live = weekJobs.filter(r => r.status !== 'cancelled');
+  const colls = live.filter(r => r.job_type !== 'delivery').length;
+  const dels = live.filter(r => r.job_type === 'delivery').length;
   const unalloc = weekJobs.filter(r => !r.driver_id && r.status !== 'cancelled' && r.status !== 'done').length;
+  // — what the week's recoveries are costing us —
+  const totals = document.getElementById('rec-totals');
+  if (totals) {
+    const cost = f => live.filter(f).reduce((s, r) => s + (Number(r.cost) || 0), 0);
+    const all = cost(() => true);
+    const priced = live.filter(r => r.cost != null).length;
+    if (live.length) {
+      const item = (lbl, val, cls) => `<div class="wt-item${cls ? ' ' + cls : ''}"><div class="wt-val">${fmtGBP(val)}</div><div class="wt-lbl">${lbl}</div></div>`;
+      totals.innerHTML = `<div class="week-totals">
+        ${item('Collections', cost(r => r.job_type !== 'delivery'))}
+        ${item('Deliveries', cost(r => r.job_type === 'delivery'))}
+        ${item('Average per job', priced ? all / priced : 0)}
+        ${item('Week recovery cost', all, 'wt-grand')}
+      </div>${priced < live.length ? `<div style="font-size:11px;color:var(--amber);margin:-6px 0 12px">${live.length - priced} of this week's ${live.length} recoveries have no cost on them yet.</div>` : ''}`;
+    } else totals.innerHTML = '';
+  }
   const intro = document.getElementById('rec-intro');
   if (intro) intro.innerHTML = weekJobs.length
-    ? `<strong>${colls}</strong> collection${colls === 1 ? '' : 's'} · <strong>${dels}</strong> deliver${dels === 1 ? 'y' : 'ies'}${unalloc ? ` · <span style="color:var(--red)"><strong>${unalloc}</strong> need${unalloc === 1 ? 's' : ''} a driver</span>` : ''} · click a job for details & notes`
+    ? `<strong>${colls}</strong> collection${colls === 1 ? '' : 's'} · <strong>${dels}</strong> deliver${dels === 1 ? 'y' : 'ies'}${unalloc ? ` · <span style="color:var(--red)"><strong>${unalloc}</strong> need${unalloc === 1 ? 's' : ''} a driver</span>` : ''} · click a job for details, notes & cost`
     : 'Nothing booked this week — use <strong>+ Book recovery</strong> to add a job.';
   const todayIso = todayISO();
   const cols = [];
@@ -1957,7 +2346,7 @@ function openRecModal(editId, prefillJobId) {
   const jobSel = document.getElementById('r-job');
   jobSel.innerHTML = '<option value="">— Not linked —</option>' +
     jobs.filter(j => j.stage < COMPLETE_STAGE).map(j =>
-      `<option value="${j.id}"${r && r.job_id === j.id ? ' selected' : ''}>${escHtml(j.reg)} — ${escHtml(j.name)}</option>`).join('');
+      `<option value="${j.id}"${r && r.job_id === j.id ? ' selected' : ''}>${escHtml(j.reg)} — ${escHtml(j.vehicle) || 'vehicle n/a'} — ${escHtml(j.name)}</option>`).join('');
   const drvSel = document.getElementById('r-driver');
   drvSel.innerHTML = '<option value="">— Unallocated —</option>' +
     recDrivers.filter(d => d.active !== false).map(d =>
@@ -1970,6 +2359,8 @@ function openRecModal(editId, prefillJobId) {
   document.getElementById('r-name').value = r ? (r.customer_name || '') : '';
   document.getElementById('r-reg').value = r ? (r.reg || '') : '';
   document.getElementById('r-vehicle').value = r ? (r.vehicle || '') : '';
+  document.getElementById('r-phone').value = r ? (r.phone || '') : '';
+  document.getElementById('r-cost').value = r && r.cost != null ? Number(r.cost).toFixed(2) : '';
   // split stored pickup/dropoff back into customer address + base
   let custAddr = '', baseKey = BASES[0].key;
   if (r) {
@@ -1977,7 +2368,7 @@ function openRecModal(editId, prefillJobId) {
     const custSide = r.job_type === 'delivery' ? r.dropoff_address : r.pickup_address;
     const b = baseFromAddress(baseSide);
     if (b) baseKey = b.key;
-    custAddr = custSide || '';
+    custAddr = cleanAddress(custSide || '', r.customer_name);
   }
   document.getElementById('r-cust-addr').value = custAddr;
   document.getElementById('r-base').value = baseKey;
@@ -1997,7 +2388,8 @@ function recPrefillFromJob(jobId) {
   document.getElementById('r-name').value = j.name || '';
   document.getElementById('r-reg').value = j.reg || '';
   document.getElementById('r-vehicle').value = j.vehicle || '';
-  document.getElementById('r-cust-addr').value = j.address || '';
+  document.getElementById('r-phone').value = j.mobile || '';
+  document.getElementById('r-cust-addr').value = jobAddress(j);
 }
 // jump from a job card on the main dashboard straight into booking a recovery
 async function bookRecoveryFor(jobId) {
@@ -2008,20 +2400,28 @@ async function bookRecoveryFor(jobId) {
 async function saveRecJob() {
   const type = document.getElementById('r-type').value;
   const base = BASES.find(b => b.key === document.getElementById('r-base').value) || BASES[0];
-  const custAddr = document.getElementById('r-cust-addr').value.trim();
+  const name = document.getElementById('r-name').value.trim() || null;
+  const custAddr = cleanAddress(document.getElementById('r-cust-addr').value.trim(), name);
+  const costRaw = document.getElementById('r-cost').value;
   const row = {
     job_id: document.getElementById('r-job').value || null,
     job_type: type,
     driver_id: document.getElementById('r-driver').value || null,
     scheduled_date: document.getElementById('r-date').value,
     scheduled_time: document.getElementById('r-time').value || null,
-    customer_name: document.getElementById('r-name').value.trim() || null,
+    customer_name: name,
     reg: document.getElementById('r-reg').value.trim().toUpperCase() || null,
     vehicle: document.getElementById('r-vehicle').value.trim() || null,
     notes: document.getElementById('r-notes').value.trim() || null,
     follows_id: document.getElementById('r-follows').value || null,
     updated_at: new Date().toISOString(),
   };
+  const extras = {
+    phone: document.getElementById('r-phone').value.trim() || null,
+    cost: costRaw === '' ? null : parseFloat(costRaw),
+  };
+  if (costRaw !== '' && isNaN(extras.cost)) { alert('Recovery cost must be a number.'); return; }
+  if (recExtraOk) Object.assign(row, extras);
   // a linked job naturally has the same driver as the job it follows
   if (row.follows_id && !row.driver_id) {
     const pred = recJobs.find(x => x.id === row.follows_id);
@@ -2044,9 +2444,18 @@ async function saveRecJob() {
   // bases have hard-wired coordinates — no geocoding needed for that side
   if (type === 'delivery') { row.pickup_lat = base.lat; row.pickup_lng = base.lng; }
   else { row.dropoff_lat = base.lat; row.dropoff_lng = base.lng; }
-  let saved, error;
-  if (recEditId) ({ data: saved, error } = await db.from('recovery_jobs').update(row).eq('id', recEditId).select());
-  else ({ data: saved, error } = await db.from('recovery_jobs').insert([row]).select());
+  const send = async payload => recEditId
+    ? db.from('recovery_jobs').update(payload).eq('id', recEditId).select()
+    : db.from('recovery_jobs').insert([payload]).select();
+  let { data: saved, error } = await send(row);
+  if (error && /cost|phone|column/i.test(error.message)) {
+    // database not migrated yet — save everything else rather than losing the booking
+    recExtraOk = false;
+    const trimmed = Object.assign({}, row);
+    delete trimmed.cost; delete trimmed.phone;
+    ({ data: saved, error } = await send(trimmed));
+    if (!error) alert('Saved, but the cost and phone number need the database upgrade — run supabase-migration-v2.sql in Supabase, then add them from the recovery popup.');
+  }
   if (error) {
     alert('Error saving recovery: ' + error.message + (recOk ? '' : '\n\nHave you run supabase-recovery-migration.sql in Supabase yet?'));
     return;
@@ -2056,7 +2465,8 @@ async function saveRecJob() {
   logEvent({ id: row.job_id, reg: row.reg, name: row.customer_name }, 'recovery',
     (recEditId ? 'Recovery updated: ' : 'Recovery booked: ') + recTypeLabel(row.job_type) + ' ' +
     shortAddr(row.pickup_address) + ' → ' + shortAddr(row.dropoff_address) + ' on ' + fmtWeekISO(row.scheduled_date) +
-    (row.scheduled_time ? ' at ' + fmtRecTime(row.scheduled_time) : '') + (drv ? ' — ' + drv.name : ''), false);
+    (row.scheduled_time ? ' at ' + fmtRecTime(row.scheduled_time) : '') + (drv ? ' — ' + drv.name : '') +
+    (recExtraOk && extras.cost != null ? ' · ' + fmtGBP(extras.cost) : ''), false);
   closeModal('rec-modal');
   recEditId = null;
   await loadRecovery();
@@ -2073,21 +2483,40 @@ async function deleteRecJob(id) {
 }
 async function setRecField(id, field, value) {
   const upd = { updated_at: new Date().toISOString() };
-  upd[field] = value || null;
+  upd[field] = value === '' ? null : value;
   const { error } = await db.from('recovery_jobs').update(upd).eq('id', id);
-  if (error) { alert('Error saving: ' + error.message); return; }
+  if (error) {
+    if (/cost|phone|column/i.test(error.message)) recExtraOk = false;
+    alert('Error saving: ' + error.message + '\n\nIf it says the column doesn\'t exist, run supabase-migration-v2.sql in the Supabase SQL Editor.');
+    return;
+  }
   const r = recJobs.find(x => x.id === id);
-  if (r) r[field] = value || null;
+  if (r) r[field] = upd[field];
   renderRecovery();
+}
+async function setRecCost(id, val) {
+  const num = val === '' ? null : parseFloat(val);
+  if (val !== '' && isNaN(num)) { alert('Please enter a number.'); return; }
+  const r = recJobs.find(x => x.id === id);
+  await setRecField(id, 'cost', num);
+  if (r) logEvent({ id: r.job_id, reg: r.reg, name: r.customer_name }, 'recovery',
+    num != null ? 'Recovery cost set to ' + fmtGBP(num) : 'Recovery cost cleared', false);
 }
 // — DETAIL SHEET —
 async function openRecDetail(id) {
   recDetailId = id;
-  recNotes = [];
+  recNotes = []; recJobNotes = [];
   renderRecDetail();
   document.getElementById('rec-detail-modal').classList.add('open');
-  const { data } = await db.from('recovery_notes').select('*').eq('recovery_id', id).order('created_at', { ascending: false });
-  recNotes = data || [];
+  const r = recJobs.find(x => x.id === id);
+  const lj = linkedJobFor(r);
+  const [dn, jn] = await Promise.all([
+    db.from('recovery_notes').select('*').eq('recovery_id', id).order('created_at', { ascending: false }),
+    lj ? db.from('job_notes').select('*').eq('job_id', lj.id).order('created_at', { ascending: false })
+       : Promise.resolve({ data: [] }),
+  ]);
+  recNotes = dn.data || [];
+  recJobNotes = jn.data || [];
   if (recDetailId === id) renderRecDetail();
 }
 function closeRecDetail(e) {
@@ -2100,12 +2529,16 @@ function renderRecDetail() {
   const el = document.getElementById('rec-detail-content');
   if (!r) { el.innerHTML = ''; return; }
   const d = driverById(r.driver_id);
+  const lj = linkedJobFor(r);
+  const veh = recVehicle(r), phone = recPhone(r), cust = recCustomer(r);
   const chips = [];
   chips.push(`<span class="chip" style="${r.job_type === 'delivery' ? 'background:var(--green-light);border-color:#5CB87A;color:#0F6E56' : 'background:var(--amber-light);border-color:#E8C48A;color:var(--amber)'}"><strong>${recTypeLabel(r.job_type)}</strong></span>`);
   chips.push(`<span class="chip">🗓 <strong>${fmtWeekISO(r.scheduled_date)}</strong>${r.scheduled_time ? ' at <strong>' + fmtRecTime(r.scheduled_time) + '</strong>' : ''}</span>`);
   chips.push(d ? `<span class="chip"><span class="driver-dot" style="background:${driverColor(d)};display:inline-block;vertical-align:-1px"></span> <strong>${escHtml(d.name)}</strong>${d.phone ? ' · ' + escHtml(d.phone) : ''}</span>`
               : `<span class="chip" style="background:var(--red-light);border-color:var(--red);color:var(--red)">⚠ No driver allocated</span>`);
   chips.push(`<span class="chip">Status: <strong>${recStatusLabel(r.status)}</strong></span>`);
+  chips.push(r.cost != null ? `<span class="chip" style="background:#16324F;border-color:#16324F;color:#fff">💷 <strong>${fmtGBP(r.cost)}</strong></span>` : `<span class="chip" style="background:var(--amber-light);border-color:#E8C48A;color:var(--amber)">No cost yet</span>`);
+  if (lj) chips.push(`<span class="chip">Repair job: <strong>${escHtml(STAGES[lj.stage] ? STAGES[lj.stage].label : '')}</strong></span>`);
   const pred = r.follows_id ? recJobs.find(x => x.id === r.follows_id) : null;
   if (pred) chips.push(`<span class="chip" style="background:#EDEBFF;border-color:#B7B0F0;color:#3B2DA3">↳ Straight after <strong>${escHtml(pred.reg || shortAddr(pred.pickup_address))}</strong></span>`);
   const next = recJobs.find(x => x.follows_id === r.id);
@@ -2115,46 +2548,82 @@ function renderRecDetail() {
   const statusOpts = REC_STATUSES.map(s => `<option value="${s[0]}"${r.status === s[0] ? ' selected' : ''}>${s[1]}</option>`).join('');
   const drvOpts = '<option value="">— Unallocated —</option>' + recDrivers.filter(x => x.active !== false).map(x =>
     `<option value="${x.id}"${r.driver_id === x.id ? ' selected' : ''}>${escHtml(x.name)}</option>`).join('');
-  const notesList = recNotes.length ? recNotes.map(n => `
-    <div class="note-item">
+  const driverNotes = recNotes.length ? recNotes.map(n => `
+    <div class="note-item driver-note">
       <div style="flex:1">
         <div class="note-body">${escHtml(n.note)}</div>
         <div class="note-time">${fmtDT(n.created_at)}</div>
       </div>
       <button class="note-del" onclick="deleteRecNote('${n.id}')" title="Delete note">✕</button>
-    </div>`).join('') : '<div style="font-size:12px;color:var(--muted);padding:8px 2px">No dated notes yet.</div>';
+    </div>`).join('') : '<div style="font-size:12px;color:var(--muted);padding:8px 2px">No driver notes yet.</div>';
+  const jobNotes = !lj
+    ? '<div style="font-size:12px;color:var(--muted);padding:8px 2px">This recovery isn\'t linked to a repair job, so there are no job notes to show. Link it with ✏️ Edit details and the dashboard notes will appear here.</div>'
+    : (recJobNotes.length ? recJobNotes.map(n => `
+    <div class="note-item">
+      <div style="flex:1">
+        <div class="note-body">${escHtml(n.note)}</div>
+        <div class="note-time">${fmtDT(n.created_at)}</div>
+      </div>
+      <button class="note-del" onclick="deleteRecJobNote('${n.id}')" title="Delete note">✕</button>
+    </div>`).join('') : '<div style="font-size:12px;color:var(--muted);padding:8px 2px">No job notes yet — anything added here also shows on the dashboard.</div>')
+    + (lj && lj.notes ? `<div class="note-item"><div class="note-body">${escHtml(lj.notes)}</div></div>` : '');
   el.innerHTML = `
     <div class="detail-header">
       ${r.reg ? `<div class="detail-reg">${escHtml(r.reg)}</div>` : ''}
       <div class="detail-info">
-        <div class="detail-name">${escHtml(r.customer_name) || recTypeLabel(r.job_type)}</div>
-        <div class="detail-vehicle">${escHtml(r.vehicle) || ''}</div>
+        <div class="detail-name">${escHtml(veh) || recTypeLabel(r.job_type)}</div>
+        <div class="detail-vehicle">${escHtml(cust) || ''}</div>
+        ${phone ? `<div class="detail-addr">📱 <a href="${escAttr(telLink(phone))}" style="color:var(--blue);text-decoration:none">${escHtml(phone)}</a></div>` : '<div class="detail-addr">No phone number on this recovery</div>'}
       </div>
     </div>
     <div class="kv-chips">${chips.join('')}</div>
     ${geoWarn}
     <div class="detail-refs" style="font-size:12px;line-height:1.7">
-      <div>🚛 <strong>Pick up:</strong> ${escHtml(r.pickup_address) || '—'}</div>
-      <div>🏁 <strong>Deliver to:</strong> ${escHtml(r.dropoff_address) || '—'}</div>
-      ${r.notes ? `<div style="margin-top:6px">📝 ${escHtml(r.notes)}</div>` : ''}
+      <div>🚛 <strong>Pick up:</strong> ${escHtml(cleanAddress(r.pickup_address, cust)) || '—'}</div>
+      <div>🏁 <strong>Deliver to:</strong> ${escHtml(cleanAddress(r.dropoff_address, cust)) || '—'}</div>
     </div>
     <div class="detail-actions" style="margin-top:0;margin-bottom:14px">
       <select class="detail-select" onchange="setRecField('${r.id}','driver_id',this.value)" title="Allocate driver">${drvOpts}</select>
       <select class="detail-select" onchange="setRecField('${r.id}','status',this.value)" title="Status">${statusOpts}</select>
     </div>
-    <div class="section-label">Notes</div>
+    <div class="section-label">Cost of this recovery</div>
+    <div class="chk" style="cursor:default;max-width:260px">
+      <span style="white-space:nowrap">£</span>
+      <input type="number" step="0.01" min="0" placeholder="0.00" value="${r.cost != null ? Number(r.cost).toFixed(2) : ''}"
+        onchange="setRecCost('${r.id}', this.value)"
+        style="flex:1;min-width:80px;font-size:13px;font-family:inherit;padding:4px 8px;border:1px solid var(--border-strong);border-radius:6px;background:var(--card)">
+    </div>
+    <div class="section-label">Customer phone</div>
+    <div class="chk" style="cursor:default;max-width:300px">
+      <span>📱</span>
+      <input type="tel" placeholder="07123 456789" value="${escAttr(r.phone || '')}"
+        onchange="setRecField('${r.id}','phone', this.value)"
+        style="flex:1;font-size:13px;font-family:inherit;padding:4px 8px;border:1px solid var(--border-strong);border-radius:6px;background:var(--card)">
+      ${phone ? `<a class="btn-link" href="${escAttr(telLink(phone))}" title="Call">📞</a>` : ''}
+    </div>
+    ${!r.phone && lj && lj.mobile ? `<div style="font-size:11px;color:var(--muted);margin-top:4px">Showing the number from the repair job — type one here to use a different one for the driver.</div>` : ''}
+    <div class="section-label">Job notes — the same notes as the dashboard</div>
+    ${lj ? `<div class="add-note-row">
+      <textarea id="new-rec-job-note" placeholder="Add a note to the repair job — shows on the dashboard too…"></textarea>
+      <button class="btn btn-primary" onclick="addRecJobNote()">Add</button>
+    </div>` : ''}
+    ${jobNotes}
+    <div class="section-label">Driver notes — recovery only</div>
+    ${r.notes ? `<div class="note-item driver-note"><div style="flex:1"><div class="note-body">${escHtml(r.notes)}</div><div class="note-time">From the booking</div></div></div>` : ''}
     <div class="add-note-row">
-      <textarea id="new-rec-note" placeholder="Add a note — stamped with today's date & time…"></textarea>
+      <textarea id="new-rec-note" placeholder="Note for the driver — keys, access, non-runner…"></textarea>
       <button class="btn btn-primary" onclick="addRecNote()">Add</button>
     </div>
-    ${notesList}
+    ${driverNotes}
     <div class="detail-actions">
       <button class="btn" onclick="openRecModal('${r.id}')">✏️ Edit details</button>
+      ${lj ? `<button class="btn" onclick="document.getElementById('rec-detail-modal').classList.remove('open');showDash();openDetail('${lj.id}')">📋 Open repair job</button>` : ''}
       <button class="btn" onclick="document.getElementById('rec-detail-modal').classList.remove('open');setRecTab('map');document.getElementById('rec-map-date').value='${r.scheduled_date}';renderRecMap()">🗺 View on map</button>
       <span style="flex:1"></span>
       <button class="detail-del" onclick="deleteRecJob('${r.id}')">Delete</button>
     </div>`;
 }
+// driver-only note (recovery_notes)
 async function addRecNote() {
   const ta = document.getElementById('new-rec-note');
   const note = (ta.value || '').trim();
@@ -2163,14 +2632,38 @@ async function addRecNote() {
   if (error) { alert('Error saving note: ' + error.message); return; }
   recNotes.unshift((data && data[0]) || { id: null, note, created_at: new Date().toISOString() });
   const r = recJobs.find(x => x.id === recDetailId);
-  if (r) logEvent({ id: r.job_id, reg: r.reg, name: r.customer_name }, 'recovery', 'Recovery note: "' + (note.length > 80 ? note.slice(0, 80) + '…' : note) + '"', false);
+  if (r) logEvent({ id: r.job_id, reg: r.reg, name: r.customer_name }, 'recovery', 'Driver note: "' + (note.length > 80 ? note.slice(0, 80) + '…' : note) + '"', false);
   renderRecDetail();
 }
 async function deleteRecNote(id) {
-  if (!confirm('Delete this note?')) return;
+  if (!confirm('Delete this driver note?')) return;
   const { error } = await db.from('recovery_notes').delete().eq('id', id);
   if (error) { alert('Error deleting note: ' + error.message); return; }
   recNotes = recNotes.filter(n => n.id !== id);
+  renderRecDetail();
+}
+// shared job note (job_notes) — identical to the dashboard's Notes tab
+async function addRecJobNote() {
+  const ta = document.getElementById('new-rec-job-note');
+  const note = (ta.value || '').trim();
+  if (!note) return;
+  const r = recJobs.find(x => x.id === recDetailId);
+  const lj = linkedJobFor(r);
+  if (!lj) return;
+  const { data, error } = await db.from('job_notes').insert([{ job_id: lj.id, note }]).select();
+  if (error) { alert('Error saving note: ' + error.message); return; }
+  const saved = (data && data[0]) || { id: null, note, created_at: new Date().toISOString() };
+  recJobNotes.unshift(saved);
+  if (detailJobId === lj.id) detailNotes.unshift(saved);
+  logEvent(lj, 'note', 'Note added from recovery: "' + (note.length > 80 ? note.slice(0, 80) + '…' : note) + '"', false);
+  renderRecDetail();
+}
+async function deleteRecJobNote(id) {
+  if (!confirm('Delete this note? It will go from the dashboard as well.')) return;
+  const { error } = await db.from('job_notes').delete().eq('id', id);
+  if (error) { alert('Error deleting note: ' + error.message); return; }
+  recJobNotes = recJobNotes.filter(n => n.id !== id);
+  detailNotes = detailNotes.filter(n => n.id !== id);
   renderRecDetail();
 }
 // — DRIVERS —
@@ -2373,6 +2866,7 @@ async function renderRecMap() {
   for (const g of groups) {
     const color = g.driver ? driverColor(g.driver) : '#888888';
     g.jobs = orderDriverJobs(g.jobs);
+    const dayCost = g.jobs.reduce((s, r) => s + (Number(r.cost) || 0), 0);
     let stopNo = 0;
     let prev = null;
     let legsHtml = '';
@@ -2401,7 +2895,7 @@ async function renderRecMap() {
         const route = await fetchRoute(r.pickup_lat, r.pickup_lng, r.dropoff_lat, r.dropoff_lng);
         if (token !== recMapToken) return;
         const line = L.polyline(route.coords, { color: jc, weight: 5, opacity: 0.85 }).addTo(recMap);
-        line.bindPopup(`<strong>${escHtml(g.driver ? g.driver.name : 'Unallocated')}</strong> — ${recTypeLabel(r.job_type)}<br>${escHtml(shortAddr(r.pickup_address))} → ${escHtml(shortAddr(r.dropoff_address))}${route.km ? '<br>' + route.km.toFixed(0) + ' km · ~' + Math.round(route.mins) + ' min' : ''}`);
+        line.bindPopup(`<strong>${escHtml(g.driver ? g.driver.name : 'Unallocated')}</strong> — ${recTypeLabel(r.job_type)}${recVehicle(r) ? '<br>' + escHtml(recVehicle(r)) : ''}${r.reg ? ' (' + escHtml(r.reg) + ')' : ''}<br>${escHtml(shortAddr(r.pickup_address))} → ${escHtml(shortAddr(r.dropoff_address))}${route.km ? '<br>' + route.km.toFixed(0) + ' km · ~' + Math.round(route.mins) + ' min' : ''}${r.cost != null ? '<br>Cost: ' + fmtGBP(r.cost) : ''}`);
         recMapLayers.push(line);
         route.coords.forEach(c => allBounds.push(c));
         if (route.km != null) legInfo = ` · ${(route.km * 0.621371).toFixed(0)} mi, ~${Math.round(route.mins)} min`;
@@ -2421,7 +2915,7 @@ async function renderRecMap() {
         }
         stopNo++;
         const m = L.marker([lat, lng], { icon: recMarkerIcon(jc, stopNo) }).addTo(recMap);
-        m.bindPopup(`<strong>Stop ${stopNo} — ${kind}</strong> (${recTypeLabel(r.job_type)})<br>${escHtml(addr || '')}${r.reg ? '<br>Reg: ' + escHtml(r.reg) : ''}${r.scheduled_time ? '<br>' + fmtRecTime(r.scheduled_time) : ''}`);
+        m.bindPopup(`<strong>Stop ${stopNo} — ${kind}</strong> (${recTypeLabel(r.job_type)})<br>${escHtml(cleanAddress(addr, recCustomer(r)) || '')}${recVehicle(r) ? '<br>' + escHtml(recVehicle(r)) : ''}${r.reg ? '<br>Reg: ' + escHtml(r.reg) : ''}${recPhone(r) ? '<br>📱 ' + escHtml(recPhone(r)) : ''}${r.scheduled_time ? '<br>' + fmtRecTime(r.scheduled_time) : ''}`);
         recMapLayers.push(m);
         allBounds.push([lat, lng]);
       };
@@ -2429,11 +2923,11 @@ async function renderRecMap() {
       if (hasDrop) placeStop(r.dropoff_lat, r.dropoff_lng, r.dropoff_address, 'drop off');
       const warn = (!hasPickup || !hasDrop) ? ` <span class="map-warn">⚠ address not located yet</span>` : '';
       const linkNote = linked ? `<div style="font-size:10px;color:var(--muted);padding-left:20px">↳ straight on from ${escHtml(prev.reg || shortAddr(prev.dropoff_address))} — no return to base</div>` : '';
-      legsHtml += linkNote + `<div class="map-leg" onclick="focusRecLeg('${r.id}')"><span class="leg-no" style="border-color:${jc};color:${jc};background:${jc}1a">${g.jobs.indexOf(r) + 1}</span>${r.scheduled_time ? '<strong>' + fmtRecTime(r.scheduled_time) + '</strong> · ' : ''}${recTypeLabel(r.job_type)}: <strong>${escHtml(shortAddr(r.pickup_address))}</strong> → <strong>${escHtml(shortAddr(r.dropoff_address))}</strong>${legInfo}${warn}</div>`;
+      legsHtml += linkNote + `<div class="map-leg" onclick="focusRecLeg('${r.id}')"><span class="leg-no" style="border-color:${jc};color:${jc};background:${jc}1a">${g.jobs.indexOf(r) + 1}</span>${r.scheduled_time ? '<strong>' + fmtRecTime(r.scheduled_time) + '</strong> · ' : ''}${recTypeLabel(r.job_type)}: <strong>${escHtml(recVehicle(r) || shortAddr(r.pickup_address))}</strong>${r.reg ? ' (' + escHtml(r.reg) + ')' : ''}<br><span style="padding-left:0">${escHtml(shortAddr(r.pickup_address))} → ${escHtml(shortAddr(r.dropoff_address))}</span>${legInfo}${r.cost != null ? ' · <strong>' + fmtGBP(r.cost) + '</strong>' : ''}${warn}</div>`;
       prev = r;
     }
     sideHtml += `<div class="map-driver-card" style="border-left-color:${color}">
-      <div class="map-driver-name"><span class="driver-dot" style="background:${color}"></span>${escHtml(g.driver ? g.driver.name : '⚠ Unallocated')}<span style="font-weight:400;color:var(--muted);font-size:11px;margin-left:auto">${g.jobs.length} job${g.jobs.length === 1 ? '' : 's'}</span></div>
+      <div class="map-driver-name"><span class="driver-dot" style="background:${color}"></span>${escHtml(g.driver ? g.driver.name : '⚠ Unallocated')}<span style="font-weight:400;color:var(--muted);font-size:11px;margin-left:auto">${g.jobs.length} job${g.jobs.length === 1 ? '' : 's'}${dayCost ? ' · ' + fmtGBP(dayCost) : ''}</span></div>
       ${legsHtml}
     </div>`;
   }
