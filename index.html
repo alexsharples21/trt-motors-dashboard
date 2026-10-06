@@ -89,7 +89,11 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .pip.comp { background: #888; }
 .progress-label { font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; margin-bottom: 8px; }
 .job-footer { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.job-refs { font-size: 11px; color: var(--muted); flex: 1; font-family: 'DM Mono', monospace; }
+.job-refs { font-size: 11px; color: var(--muted); flex: 1; font-family: 'DM Mono', monospace; display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; }
+.job-no { font-weight: 600; color: var(--text); letter-spacing: 0.5px; }
+.ref-chip { display: inline-block; padding: 1px 6px; border-radius: 4px; background: var(--bg); border: 1px solid var(--border); white-space: nowrap; }
+.ref-chip .ref-x { margin-left: 4px; color: var(--red); cursor: pointer; }
+.scheme-pill { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 10px; background: #E6F1FB; color: #0C447C; border: 1px solid #90BEE8; font-family: inherit; letter-spacing: 0; }
 .stage-select { font-size: 12px; padding: 5px 8px; border: 1px solid var(--border-strong); border-radius: 6px; font-family: inherit; background: var(--card); cursor: pointer; max-width: 220px; }
 .btn-icon { background: none; border: 1px solid var(--border-strong); border-radius: 6px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--muted); font-size: 16px; }
 .btn-icon:hover { border-color: var(--red); color: var(--red); background: var(--red-light); }
@@ -406,7 +410,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
     <div class="toolbar">
       <div class="search-wrap">
         <span class="search-icon">⌕</span>
-        <input type="text" id="search-input" placeholder="Search name, reg, vehicle…" oninput="renderJobs()">
+        <input type="text" id="search-input" placeholder="Search name, reg, vehicle, TRT number or reference…" oninput="renderJobs()">
       </div>
       <select class="filter-select" id="stage-filter" onchange="renderJobs()">
         <option value="">All stages</option>
@@ -614,8 +618,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
     </div>
     <div class="form-row"><label>Address</label><input id="f-addr" placeholder="1 High Street, Liverpool, L1 1AA"></div>
     <div class="form-grid">
-      <div class="form-row"><label>Invoice number</label><input id="f-inv" placeholder="02603"></div>
-      <div class="form-row"><label>ACG reference</label><input id="f-ref" placeholder="1432000"></div>
+      <div class="form-row"><label>Work provider</label><select id="f-scheme"></select></div>
+      <div class="form-row"><label>Provider reference (optional)</label>
+        <div style="display:flex;gap:6px"><select id="f-ref-provider" style="flex:0 0 42%"></select><input id="f-ref" placeholder="1432000" style="flex:1"></div>
+      </div>
     </div>
     <div class="form-row"><label>Stage</label><select id="f-stage"></select></div>
     <div class="modal-actions">
@@ -629,15 +635,46 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 const SUPABASE_URL = 'https://kgohkilvxqjfadhyasyk.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_i2I2Rtl_1skzxqBGXxpjqA_icdg62u6';
 const PHOTO_BUCKET = 'job-photos';
+// ─── WORK PROVIDERS ──────────────────────────────────────
+// jobs.scheme says who the job is for; job_references holds every outside
+// reference (one row each) and the internal number lives in jobs.job_no (TRT-1042…).
+const SCHEMES = [
+  { key: 'acg',        label: 'ACG (Accident Credit Group)' },
+  { key: 'enterprise', label: 'Enterprise (via IM Solutions)' },
+  { key: 'blackthorn', label: 'Blackthorn' },
+  { key: 'nationwide', label: 'Nationwide' },
+  { key: 'private',    label: 'Private / other' },
+];
+const SCHEME_NAME = { acg: 'ACG', enterprise: 'Enterprise', blackthorn: 'Blackthorn', nationwide: 'Nationwide', private: 'the customer' };
+const REF_PROVIDERS = [
+  { provider: 'acg',        ref_type: 'case',        label: 'ACG case' },
+  { provider: 'laird',      ref_type: 'case',        label: 'Laird ref' },
+  { provider: 'ims',        ref_type: 'case',        label: 'IMS case' },
+  { provider: 'enterprise', ref_type: 'instruction', label: 'Enterprise IGR' },
+  { provider: 'blackthorn', ref_type: 'rep',         label: 'Blackthorn REP' },
+  { provider: 'insurer',    ref_type: 'claim',       label: 'Insurer claim' },
+];
+function schemeName(j) { return SCHEME_NAME[(j && j.scheme) || 'private'] || 'the customer'; }
+function stageSub(stage, j) {
+  const sub = STAGES[stage] ? STAGES[stage].sub : '';
+  if (!j || !j.scheme || j.scheme === 'private') return sub.replace(/ (from|to) \{provider\}/, '');
+  return sub.replace('{provider}', schemeName(j));
+}
+let refsByJob = {};     // job_id -> [ {id, provider, ref_type, ref} ]
+function jobRefs(j) { return (j && refsByJob[j.id]) || []; }
+function refLabel(r) { const p = REF_PROVIDERS.find(x => x.provider === r.provider && x.ref_type === r.ref_type); return p ? p.label : (r.provider + ' ' + r.ref_type); }
+function refChips(j, editable) {
+  return jobRefs(j).map(r => `<span class="ref-chip" title="${escAttr(refLabel(r))}">${escHtml(refLabel(r).split(' ')[0].toUpperCase())} ${escHtml(r.ref)}${editable ? `<span class="ref-x" title="Remove this reference" onclick="removeRef('${r.id}','${j.id}')">✕</span>` : ''}</span>`).join('');
+}
 // ─── STAGES ("Estimated" is a tick-box, not a stage) ─────
 const STAGES = [
-  { label: 'New instruction',        sub: 'Job instruction received from ACG' },
+  { label: 'New instruction',        sub: 'Job instruction received from {provider}' },
   { label: 'Ready for collection',   sub: 'Arranging collection of your vehicle' },
   { label: 'On site',                sub: 'Vehicle collected and with us' },
   { label: 'In repair',              sub: 'Repair work underway' },
   { label: 'Collection / Delivery',  sub: 'Arranging vehicle return to customer' },
   { label: 'Needs Invoicing',        sub: 'Repair complete — ready to raise the invoice' },
-  { label: 'Invoiced',               sub: 'Invoice submitted to ACG' },
+  { label: 'Invoiced',               sub: 'Invoice submitted to {provider}' },
   { label: 'Complete',               sub: 'Repair finished — all done' },
 ];
 const READY_COLLECT_STAGE = STAGES.findIndex(s => s.label === 'Ready for collection');
@@ -834,6 +871,12 @@ async function refreshJobs() {
   const { data, error } = await db.from('jobs_with_supplementary').select('*').order('added_date', { ascending: false });
   if (error) { console.error(error); return; }
   jobs = data || [];
+  // Outside references (ACG / Laird / IMS / Blackthorn …), one row each
+  const { data: refRows, error: refErr } = await db.from('job_references').select('id,job_id,provider,ref_type,ref').order('created_at', { ascending: true });
+  if (!refErr && refRows) {
+    refsByJob = {};
+    refRows.forEach(r => { (refsByJob[r.job_id] = refsByJob[r.job_id] || []).push(r); });
+  }
   // Merge schedule / checklist fields straight from the base table,
   // so they're always present even if the view doesn't expose them.
   const { data: extra, error: exErr } = await db.from('jobs')
@@ -1119,7 +1162,8 @@ function renderJobs() {
   const q = (document.getElementById('search-input').value || '').toLowerCase();
   const sf = document.getElementById('stage-filter').value;
   const filtered = jobs.filter(j => {
-    const mq = !q || (j.name||'').toLowerCase().includes(q) || (j.reg||'').toLowerCase().includes(q) || (j.vehicle||'').toLowerCase().includes(q);
+    const mq = !q || (j.name||'').toLowerCase().includes(q) || (j.reg||'').toLowerCase().includes(q) || (j.vehicle||'').toLowerCase().includes(q)
+      || (j.job_no||'').toLowerCase().includes(q) || jobRefs(j).some(r => (r.ref||'').toLowerCase().includes(q));
     const ms = sf === '' || j.stage === parseInt(sf);
     const mf = currentFilter === 'all' ? true
              : currentFilter === 'invoiced' ? j.stage >= INVOICED_STAGE
@@ -1179,9 +1223,10 @@ function renderJobs() {
       </div>
       <div class="job-footer">
         <span class="job-refs">
-          ${j.invoice_number ? 'INV ' + escHtml(j.invoice_number) + ' · ' : ''}
-          REF ${escHtml(j.acg_ref) || '—'}
-          ${j.laird_ref ? ' · LAIRD ' + escHtml(j.laird_ref) : ''}
+          <span class="job-no">${escHtml(j.job_no) || '—'}</span>
+          <span class="scheme-pill">${escHtml(schemeName(j) === 'the customer' ? 'Private' : schemeName(j))}</span>
+          ${j.invoice_number ? '<span class="ref-chip">INV ' + escHtml(j.invoice_number) + '</span>' : ''}
+          ${refChips(j, false)}
         </span>
         <select class="stage-select" onchange="updateStage('${j.id}', this.value)">${opts}</select>
         ${weekSelectHTML(j)}
@@ -1234,7 +1279,7 @@ async function updateStageFromDetail(id, stage) {
   renderDetail();
 }
 async function removeJob(id, name, reg) {
-  if (!confirm(`Remove ${name} (${reg}) from dashboard?\n\nThis should only be done when remittance has been received from ACG.`)) return;
+  if (!confirm(`Remove ${name} (${reg}) from dashboard?\n\nThis should only be done once payment has been received from the work provider.`)) return;
   const j = jobs.find(x => x.id === id);
   if (j) await logEvent(j, 'removed', 'Removed from dashboard', false);
   const { error } = await db.from('jobs').delete().eq('id', id);
@@ -1250,13 +1295,16 @@ async function addJob() {
   const vehicle = document.getElementById('f-vehicle').value.trim();
   const mobile = document.getElementById('f-mobile').value.trim();
   const address = cleanAddress(document.getElementById('f-addr').value.trim(), name);
-  const invoice_number = document.getElementById('f-inv').value.trim();
-  const acg_ref = document.getElementById('f-ref').value.trim();
+  const scheme = document.getElementById('f-scheme').value || 'private';
+  const refProv = REF_PROVIDERS[parseInt(document.getElementById('f-ref-provider').value) || 0];
+  const refVal = document.getElementById('f-ref').value.trim();
   const stage = parseInt(document.getElementById('f-stage').value);
   if (!name || !reg || !vehicle) { alert('Please fill in name, registration and vehicle.'); return; }
   const stage_dates = {}; stage_dates[stage] = todayISO();
+  // job_no (TRT-xxxx) is assigned by the database; invoice numbers are only
+  // issued when an invoice is generated, never at job creation.
   const row = {
-    name, reg, vehicle, address, invoice_number, acg_ref, stage,
+    name, reg, vehicle, address, scheme, stage,
     auth_confirmed: stage >= IN_REPAIR_STAGE, added_date: todayISO(), stage_dates
   };
   if (newColsOk) {
@@ -1273,9 +1321,14 @@ async function addJob() {
   }
   if (error) { alert('Error adding job: ' + error.message); return; }
   const newJob = (data && data[0]) || { id: null, reg, name };
-  logEvent(newJob, 'created', 'Job added manually — starting at "' + (STAGES[stage] ? STAGES[stage].label : stage) + '"', false);
+  if (newJob.id && refVal) {
+    // the sync trigger copies acg / laird refs into the legacy columns for anything still reading them
+    const { error: refError } = await db.from('job_references').insert([{ job_id: newJob.id, provider: refProv.provider, ref_type: refProv.ref_type, ref: refVal }]);
+    if (refError) alert('Job added, but the reference could not be saved: ' + refError.message + (/duplicate|unique/i.test(refError.message) ? '\n\nThat reference is already on another job.' : ''));
+  }
+  logEvent(newJob, 'created', (newJob.job_no ? newJob.job_no + ' — ' : '') + 'Job added manually — starting at "' + (STAGES[stage] ? STAGES[stage].label : stage) + '"', false);
   closeModal('add-modal');
-  ['f-name','f-reg','f-vehicle','f-mobile','f-addr','f-inv','f-ref'].forEach(id => document.getElementById(id).value = '');
+  ['f-name','f-reg','f-vehicle','f-mobile','f-addr','f-ref'].forEach(id => document.getElementById(id).value = '');
   await refreshJobs();
 }
 function toggleDamage(id) {
@@ -1312,6 +1365,10 @@ function populateStageSelects() {
   if (sf) sf.innerHTML = '<option value="">All stages</option>' + opts;
   const fs = document.getElementById('f-stage');
   if (fs) fs.innerHTML = opts;
+  const sc = document.getElementById('f-scheme');
+  if (sc) sc.innerHTML = SCHEMES.map(s => `<option value="${s.key}">${s.label}</option>`).join('');
+  const rp = document.getElementById('f-ref-provider');
+  if (rp) rp.innerHTML = REF_PROVIDERS.map((r, i) => `<option value="${i}">${r.label}</option>`).join('');
 }
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
@@ -1350,6 +1407,34 @@ async function setText(id, field, value) {
   if (j) j[field] = value;
 }
 // customer phone number, edited from the job popup
+async function setScheme(id, value) {
+  const { error } = await db.from('jobs').update({ scheme: value, updated_at: new Date().toISOString() }).eq('id', id);
+  if (error) { alert('Error saving work provider: ' + error.message); return; }
+  const j = jobs.find(x => x.id === id);
+  if (j) { j.scheme = value; logEvent(j, 'scheme', 'Work provider set to ' + (SCHEMES.find(s => s.key === value) || {}).label, false); }
+  renderJobs(); renderDetail();
+}
+async function addRef(jobId) {
+  const prov = REF_PROVIDERS[parseInt(document.getElementById('ref-prov-' + jobId).value) || 0];
+  const val = (document.getElementById('ref-val-' + jobId).value || '').trim();
+  if (!val) return;
+  const { data, error } = await db.from('job_references').insert([{ job_id: jobId, provider: prov.provider, ref_type: prov.ref_type, ref: val }]).select();
+  if (error) { alert('Could not add reference: ' + error.message + (/duplicate|unique/i.test(error.message) ? '\n\nThat reference is already on another job.' : '')); return; }
+  (refsByJob[jobId] = refsByJob[jobId] || []).push(data[0]);
+  const j = jobs.find(x => x.id === jobId);
+  if (j) logEvent(j, 'ref', prov.label + ' ' + val + ' added', false);
+  renderJobs(); renderDetail();
+}
+async function removeRef(refId, jobId) {
+  const r = (refsByJob[jobId] || []).find(x => x.id === refId);
+  if (!r || !confirm('Remove ' + refLabel(r) + ' ' + r.ref + ' from this job?')) return;
+  const { error } = await db.from('job_references').delete().eq('id', refId);
+  if (error) { alert('Could not remove reference: ' + error.message); return; }
+  refsByJob[jobId] = (refsByJob[jobId] || []).filter(x => x.id !== refId);
+  const j = jobs.find(x => x.id === jobId);
+  if (j) logEvent(j, 'ref', refLabel(r) + ' ' + r.ref + ' removed', false);
+  renderJobs(); renderDetail();
+}
 async function setMobile(id, value) {
   const v = (value || '').trim() || null;
   const { error } = await db.from('jobs').update({ mobile: v, updated_at: new Date().toISOString() }).eq('id', id);
@@ -1469,7 +1554,15 @@ function renderDetail() {
     <div class="detail-progress">${pips}</div>
     <div class="kv-chips">${chips.join('')}</div>
     <div class="detail-refs">
-      ${j.invoice_number ? 'INV ' + escHtml(j.invoice_number) + '  ·  ' : ''}ACG ${escHtml(j.acg_ref) || '—'}${j.laird_ref ? '  ·  LAIRD ' + escHtml(j.laird_ref) : ''}
+      <span class="job-no" style="font-size:13px">${escHtml(j.job_no) || '—'}</span>
+      &nbsp;<span class="scheme-pill">${escHtml(schemeName(j) === 'the customer' ? 'Private' : schemeName(j))}</span>
+      <select onchange="setScheme('${j.id}', this.value)" style="font-size:11px;margin-left:6px">${SCHEMES.map(sc => `<option value="${sc.key}" ${(j.scheme||'private')===sc.key?'selected':''}>${sc.label}</option>`).join('')}</select>
+      <br>${j.invoice_number ? '<span class="ref-chip">INV ' + escHtml(j.invoice_number) + '</span> ' : ''}${refChips(j, true)}
+      <span style="white-space:nowrap">
+        <select id="ref-prov-${j.id}" style="font-size:11px">${REF_PROVIDERS.map((r, i) => `<option value="${i}">${r.label}</option>`).join('')}</select>
+        <input id="ref-val-${j.id}" placeholder="reference" style="font-size:11px;width:110px;font-family:inherit">
+        <button class="btn-link" onclick="addRef('${j.id}')" title="Add a provider reference">+ ref</button>
+      </span>
       ${j.mobile ? '<br>📱 <a href="' + escAttr(telLink(j.mobile)) + '">' + escHtml(j.mobile) + '</a>' : '<br><span style="color:var(--faint)">No phone number — add one on the 📇 Contact tab</span>'}
     </div>
     <div class="dtabs">
@@ -1857,7 +1950,7 @@ function garyCard(j) {
     <div class="progress-track">${pips}</div>
     <div class="progress-label">
       <span><strong>${STAGES[j.stage]?.label || '—'}</strong></span>
-      <span style="font-family:'DM Mono',monospace">${j.invoice_number ? 'INV ' + escHtml(j.invoice_number) + ' · ' : ''}REF ${escHtml(j.acg_ref) || '—'}${j.repair_grand_total != null ? ' · £' + Number(j.repair_grand_total).toFixed(2) : ''}</span>
+      <span style="font-family:'DM Mono',monospace"><span class="job-no">${escHtml(j.job_no) || '—'}</span>${j.invoice_number ? ' · INV ' + escHtml(j.invoice_number) : ''}${jobRefs(j)[0] ? ' · ' + escHtml(refLabel(jobRefs(j)[0]).split(' ')[0].toUpperCase()) + ' ' + escHtml(jobRefs(j)[0].ref) : ''}${j.repair_grand_total != null ? ' · £' + Number(j.repair_grand_total).toFixed(2) : ''}</span>
     </div>
     ${j.damage ? `<div class="damage-body open" style="margin-top:6px">${escHtml(j.damage)}</div>` : ''}
   </div>`;
@@ -2010,7 +2103,7 @@ async function showTracker(reg) {
   document.getElementById('loading-view').style.display = 'none';
   document.getElementById('tracker-view').style.display = 'block';
   const regSearch = reg.replace(/\s/g, '').toUpperCase();
-  const { data, error } = await db.from('jobs').select('name,reg,vehicle,stage').ilike('reg', `%${regSearch}%`).limit(1);
+  const { data, error } = await db.from('jobs').select('name,reg,vehicle,stage,scheme').ilike('reg', `%${regSearch}%`).limit(1);
   const el = document.getElementById('tracker-content');
   if (error || !data || data.length === 0) {
     el.innerHTML = `
@@ -2039,7 +2132,7 @@ async function showTracker(reg) {
         </div>
         <div class="stage-content" style="${isLast ? 'padding-bottom:0' : ''}">
           <span class="stage-content-label ${labelClass}">${s.label}${active ? '<span class="in-progress-pill">In progress</span>' : ''}</span>
-          ${(done || active) ? `<div class="stage-content-sub">${s.sub}</div>` : ''}
+          ${(done || active) ? `<div class="stage-content-sub">${stageSub(i, job)}</div>` : ''}
         </div>
       </div>`;
   }).join('');
