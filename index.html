@@ -650,7 +650,7 @@ const REF_PROVIDERS = [
   { provider: 'acg',        ref_type: 'case',        label: 'ACG case' },
   { provider: 'laird',      ref_type: 'case',        label: 'Laird ref' },
   { provider: 'ims',        ref_type: 'case',        label: 'IMS case' },
-  { provider: 'enterprise', ref_type: 'instruction', label: 'Enterprise IGR' },
+  { provider: 'ims',        ref_type: 'instruction', label: 'Enterprise IGR' },   // same row the IMS workflows write
   { provider: 'blackthorn', ref_type: 'rep',         label: 'Blackthorn REP' },
   { provider: 'insurer',    ref_type: 'claim',       label: 'Insurer claim' },
 ];
@@ -676,7 +676,10 @@ const STAGES = [
   { label: 'Needs Invoicing',        sub: 'Repair complete — ready to raise the invoice' },
   { label: 'Invoiced',               sub: 'Invoice submitted to {provider}' },
   { label: 'Complete',               sub: 'Repair finished — all done' },
+  { label: 'Paid',                   sub: 'Payment received from {provider}' },   // set by the remittance workflow
 ];
+// Progress bars and the customer tracker treat Complete as 100% — Paid is bookkeeping, not repair progress.
+const CUSTOMER_STAGES = STAGES.filter(s => s.label !== 'Paid');
 const READY_COLLECT_STAGE = STAGES.findIndex(s => s.label === 'Ready for collection');
 const COLL_DELIVERY_STAGE = STAGES.findIndex(s => s.label === 'Collection / Delivery');
 const ON_SITE_STAGE   = STAGES.findIndex(s => s.label === 'On site');
@@ -684,7 +687,8 @@ const IN_REPAIR_STAGE = STAGES.findIndex(s => s.label === 'In repair');
 const NEEDS_INV_STAGE = STAGES.findIndex(s => s.label === 'Needs Invoicing');
 const INVOICED_STAGE  = STAGES.findIndex(s => s.label === 'Invoiced');
 const COMPLETE_STAGE  = STAGES.findIndex(s => s.label === 'Complete');
-const LAST_STAGE = STAGES.length - 1;
+const PAID_STAGE      = STAGES.findIndex(s => s.label === 'Paid');
+const LAST_STAGE = COMPLETE_STAGE;   // 100% on the progress bar
 const FLAG_LABELS = {
   is_estimated: 'Estimated',
   parts_ordered: 'All parts ordered',
@@ -897,18 +901,15 @@ async function refreshJobs() {
   } else {
     newColsOk = false;
   }
-  // Auto-log any changes made elsewhere (backend, another device)
+  // Changes made elsewhere (the n8n workflows, the invoice webhook, another device): keep the
+  // stage dates and repair dates up to date, but do NOT write an activity event here — whoever
+  // made the change already logged one, and with several devices open every one of them used to
+  // log "Repair authorised" / "Moved to …" again (9 Oct 2026).
   jobs.forEach(j => {
     const p = prev[j.id];
     if (!p) return;
-    if (p.stage !== j.stage) {
-      logEvent(j, 'stage', 'Moved to "' + (STAGES[j.stage] ? STAGES[j.stage].label : j.stage) + '"', true);
-      recordStageDate(j, j.stage);
-    }
-    if (!p.auth && j.auth_confirmed) {
-      logEvent(j, 'auth', 'Repair authorised', true);
-      stampRepairDate(j, 'authorised', todayISO());
-    }
+    if (p.stage !== j.stage) recordStageDate(j, j.stage);
+    if (!p.auth && j.auth_confirmed) stampRepairDate(j, 'authorised', todayISO());
   });
   renderJobs();
   if (document.getElementById('week-view').style.display === 'block') renderWeek();
@@ -973,7 +974,7 @@ function renderLog() {
   }).join('');
 }
 function pipClass(i, stage) {
-  if (stage === COMPLETE_STAGE) return i <= COMPLETE_STAGE ? 'comp' : '';
+  if (stage >= COMPLETE_STAGE) return i <= stage ? 'comp' : '';
   if (stage === INVOICED_STAGE) return i < INVOICED_STAGE ? 'done' : i === INVOICED_STAGE ? 'inv' : '';
   if (i < stage) return 'done';
   if (i === stage) return 'active';
@@ -1022,7 +1023,7 @@ function autoRepairDatesDetail(j) {
     return e ? isoLocal(new Date(e.created_at)) : null;
   };
   out.estimated = out.estimated || firstEv(/^Estimated ✓/);
-  out.authorised = out.authorised || firstEv(/^Repair authorised$/);
+  out.authorised = out.authorised || firstEv(/^(Repair authorised$|Authority received|Repair authorised)/);
   out.supp_sent = out.supp_sent || firstEv(/^Supplementary sent ✓/);
   const partsOn = firstEv(/^Parts on site ✓/);
   if (partsOn) {
@@ -1182,7 +1183,7 @@ function renderJobs() {
     const days = daysSince(j.added_date);
     const dClass = days <= 7 ? 'days-ok' : days <= 14 ? 'days-warn' : 'days-over';
     const pips = STAGES.map((_, i) => `<div class="pip ${pipClass(i, j.stage)}"></div>`).join('');
-    const pct = Math.round((j.stage / LAST_STAGE) * 100);
+    const pct = Math.min(100, Math.round((j.stage / LAST_STAGE) * 100));
     const addr = jobAddress(j);
     const tags = [];
     if (j.auth_confirmed) tags.push(`<span class="tag tag-auth">✓ Authorised</span>`);
@@ -1200,7 +1201,8 @@ function renderJobs() {
       }
       tags.push(`<span class="tag tag-supp">${suppLabel}</span>`);
     }
-    if (j.stage >= INVOICED_STAGE) tags.push(`<span class="tag tag-inv">Invoiced</span>`);
+    if (j.stage === PAID_STAGE) tags.push(`<span class="tag tag-inv">Paid ✓</span>`);
+    else if (j.stage >= INVOICED_STAGE) tags.push(`<span class="tag tag-inv">Invoiced</span>`);
     if (j.repair_day) tags.push(`<span class="tag tag-week">🗓 ${fmtWeekISO(j.repair_day)}</span>`);
     else if (j.repair_week_start) tags.push(`<span class="tag tag-week">🗓 Wk ${fmtShortISO(j.repair_week_start)}</span>`);
     const opts = STAGES.map((s, i) => `<option value="${i}" ${j.stage===i?'selected':''}>${s.label}</option>`).join('');
@@ -1249,7 +1251,7 @@ function renderJobs() {
 function renderStats() {
   const inProg = jobs.filter(j => j.stage < INVOICED_STAGE).length;
   const inv = jobs.filter(j => j.stage === INVOICED_STAGE).length;
-  const comp = jobs.filter(j => j.stage === COMPLETE_STAGE).length;
+  const comp = jobs.filter(j => j.stage >= COMPLETE_STAGE).length;   // Complete + Paid
   document.getElementById('stats-grid').innerHTML = `
     <div class="stat-card blue"><div class="stat-val">${inProg}</div><div class="stat-lbl">In progress</div></div>
     <div class="stat-card amber"><div class="stat-val">${inv}</div><div class="stat-lbl">Invoiced</div></div>
@@ -1516,7 +1518,7 @@ function renderDetail() {
   const sd = j.stage_dates || {};
   const addr = jobAddress(j);
   const pips = STAGES.map((_, i) => `<div class="detail-pip ${pipClass(i, j.stage)}"></div>`).join('');
-  const pct = Math.round((j.stage / LAST_STAGE) * 100);
+  const pct = Math.min(100, Math.round((j.stage / LAST_STAGE) * 100));
   const opts = STAGES.map((s, i) => `<option value="${i}" ${j.stage===i?'selected':''}>${s.label}</option>`).join('');
   const chips = [];
   chips.push(`<span class="chip">Added <strong>${fmtShortISO(j.added_date)}</strong></span>`);
@@ -1590,7 +1592,7 @@ function migrationHint(file) {
 // — Timeline tab: every stage with the date it was reached + full event history —
 function buildTimeline(j, sd) {
   const stageItems = STAGES.map((s, i) => {
-    const done = i < j.stage || (j.stage === COMPLETE_STAGE && i <= COMPLETE_STAGE);
+    const done = i < j.stage || (j.stage >= COMPLETE_STAGE && i <= j.stage);
     const active = i === j.stage;
     const dotClass = done && !active ? 'done' : active ? 'active' : '';
     const textClass = done && !active ? '' : active ? 'active' : 'pending';
@@ -2115,12 +2117,12 @@ async function showTracker(reg) {
     return;
   }
   const job = data[0];
-  const stage = job.stage || 0;
+  const stage = Math.min(job.stage || 0, COMPLETE_STAGE);   // Paid shows as Complete to the customer
   const isComplete = stage === COMPLETE_STAGE;
-  const stageItems = STAGES.map((s, i) => {
+  const stageItems = CUSTOMER_STAGES.map((s, i) => {
     const done = i < stage;
     const active = i === stage;
-    const isLast = i === STAGES.length - 1;
+    const isLast = i === CUSTOMER_STAGES.length - 1;
     const dotClass = done ? 'done' : active ? 'active' : 'pending';
     const icon = done ? '✓' : active ? '▶' : '';
     const labelClass = done ? '' : active ? 'active' : 'pending';
